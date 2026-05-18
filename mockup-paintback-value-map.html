@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — paint-back/strategist/value-map/v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1400px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .canvas {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+  .painted-frame {
+    background: #FFFFFF;
+    margin: 32px;
+    padding: 28px;
+    border: 2px dashed #8B9CB0;
+    border-radius: 4px;
+    position: relative;
+  }
+  .frame-tag {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .frame-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .frame-subtitle {
+    font-size: 12px;
+    color: #6B6B6B;
+    margin-bottom: 20px;
+  }
+  /* Chain + drops paint-back frame */
+  .chain-frame-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .chain-activity {
+    background: #F8F9FA;
+    border: 1px solid #E0E0DC;
+    border-top: 3px solid #08ABED;
+    padding: 8px 10px;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .chain-activity .pa-id { font-size: 9px; color: #08ABED; letter-spacing: 0.04em; margin-bottom: 2px; font-weight: 600; }
+  .chain-activity.out { opacity: 0.5; border-top-color: #B0B0B0; }
+  .chain-activity.out .pa-id { color: #94A3B8; }
+  .drop-band {
+    background: #5DCAA5;
+    color: #04342C;
+    padding: 7px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 6px;
+  }
+  .drop-band .drop-name { font-weight: 600; }
+  .drop-band .drop-meta {
+    font-size: 9px;
+    opacity: 0.85;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 2px;
+  }
+  .drop-band .drop-signal { font-size: 10px; font-style: italic; margin-top: 3px; }
+  .drop-band .vd-chip {
+    background: rgba(255,255,255,0.5);
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-family: ui-monospace, monospace;
+    font-weight: 600;
+  }
+  /* Value tree visual */
+  .tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .tree-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 16px; }
+  .tree-node {
+    background: #F8F9FA;
+    padding: 10px 14px;
+    border-radius: 4px;
+    border-left: 3px solid #1971C2;
+    font-size: 12px;
+    font-weight: 500;
+    position: relative;
+  }
+  .tree-node.objective { background: #E7F5FF; border-left-color: #1971C2; }
+  .tree-node.driver {
+    background: #EBFBEE;
+    border-left-color: #2F9E44;
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+  .driver-block { padding-left: 18px; position: relative; }
+  .driver-block::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 10px;
+    height: 1px;
+    background: #B0B0B0;
+  }
+  .metric {
+    background: #FFF9E6;
+    margin-left: 28px;
+    margin-bottom: 4px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 6px;
+    align-items: center;
+    border-left: 2px solid #F0AD4E;
+    position: relative;
+  }
+  .metric::before {
+    content: '';
+    position: absolute;
+    left: -18px;
+    top: 12px;
+    width: 12px;
+    height: 1px;
+    background: #B0B0B0;
+  }
+  .metric .m-name { font-weight: 500; }
+  .metric .m-baseline { color: #C2410C; }
+  .metric .m-target { color: #166534; font-weight: 600; }
+  .metric .m-horizon { color: #4A4A4A; }
+  .metric.contested {
+    border-left-color: #DC2626;
+    background: #FEF2F2;
+  }
+  .metric.contested::after {
+    content: '⚠ contested';
+    font-size: 9px;
+    background: #DC2626;
+    color: white;
+    padding: 1px 6px;
+    border-radius: 8px;
+    grid-column: 1 / -1;
+    justify-self: end;
+    margin-top: 2px;
+  }
+  .metric.tbd-baseline .m-baseline {
+    background: #FEF3C7;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  /* Hypothesis register frame */
+  .hyp-frame {
+    background: #FFFFFF;
+    margin: 0 32px 32px;
+    padding: 24px;
+    border: 2px dashed #8B9CB0;
+    border-radius: 4px;
+    position: relative;
+  }
+  .hyp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
+    font-size: 12px;
+  }
+  .hyp-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .hyp-table td {
+    padding: 10px;
+    border-bottom: 1px solid #F0F0EC;
+    vertical-align: top;
+  }
+  .hyp-table .id { font-weight: 600; color: #1971C2; font-family: ui-monospace, monospace; }
+  .hyp-table .conf-high { color: #166534; font-weight: 500; }
+  .hyp-table .conf-medium { color: #C2410C; font-weight: 500; }
+  .hyp-table .conf-low { color: #991B1B; font-weight: 500; }
+  /* Comments zone */
+  .comments-zone {
+    background: #FAFAF5;
+    margin: 0 32px 32px;
+    padding: 24px;
+    border: 1px dashed #D0D0CA;
+    border-radius: 4px;
+  }
+  .comments-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4A4A4A;
+    margin-bottom: 14px;
+  }
+  .comment-stickies {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .comment-sticky {
+    width: 180px;
+    padding: 10px 12px;
+    background: #FFF9C4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    font-size: 11px;
+    line-height: 1.4;
+    transform: rotate(-1deg);
+    border-radius: 2px;
+  }
+  .comment-sticky:nth-child(2n) { transform: rotate(1deg); background: #F8BBD0; }
+  .comment-sticky:nth-child(3n) { transform: rotate(-0.5deg); background: #BBDEFB; }
+  .comment-sticky .author {
+    font-size: 9px;
+    color: #6B6B6B;
+    margin-top: 6px;
+    border-top: 1px dotted rgba(0,0,0,0.15);
+    padding-top: 4px;
+  }
+  .legend {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .legend-item { max-width: 280px; }
+  .legend-item-title { font-weight: 500; margin-bottom: 4px; font-size: 12px; }
+  .legend-item-desc { font-size: 11px; color: #6B6B6B; line-height: 1.5; }
+  .footnote {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: #6B6B6B;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Value Map paint-back</h1>
+  <div class="meta">
+    <span class="code">paint-back/strategist/value-map/v1</span>
+    · Renders Strategist Output 2 to canvas
+    · Spec: <span class="code">figjam-output-rendering-spec.md §4</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Value Map review · 26 Apr 2026</div>
+    <div class="right">v1 · Painted from blackboard</div>
+  </div>
+
+  <!-- CHAIN + DROPS FRAME (top, read-mostly) -->
+  <div class="painted-frame">
+    <div class="frame-tag">VALUE CHAIN + DROPS · PAINTED FROM SCHEMA · READ-MOSTLY</div>
+    <div class="frame-title">Where value flows · how it lands over time</div>
+    <div class="frame-subtitle">Primary activities top row · drops sequenced underneath by horizon · drop edits flow through the workshop, not the paint-back</div>
+
+    <!-- Primary activities row -->
+    <div class="chain-frame-row">
+      <div class="chain-activity"><div class="pa-id">PA-01 INBOUND</div>Sourcing</div>
+      <div class="chain-activity"><div class="pa-id">PA-02 OPERATIONS</div>Merchandising</div>
+      <div class="chain-activity"><div class="pa-id">PA-03 OUTBOUND</div>Selling</div>
+      <div class="chain-activity out"><div class="pa-id">PA-04 MARKETING</div>Fulfilment</div>
+      <div class="chain-activity"><div class="pa-id">PA-05 SERVICE</div>Customer care</div>
+    </div>
+
+    <!-- Drops sequenced by horizon -->
+    <div class="drop-band">
+      <div class="drop-name">VDR-01 · Unified checkout</div>
+      <div class="drop-meta">
+        <span>Month 6</span> ·
+        <span>touches: <span class="vd-chip">PA-03</span></span> ·
+        <span>moves: <span class="vd-chip">VD-04</span></span>
+      </div>
+      <div class="drop-signal">Brand 4 cart abandon 71% → ≤61%</div>
+    </div>
+    <div class="drop-band">
+      <div class="drop-name">VDR-02 · Shared catalogue + identity</div>
+      <div class="drop-meta">
+        <span>Month 12</span> ·
+        <span>touches: <span class="vd-chip">PA-02</span> <span class="vd-chip">PA-03</span></span> ·
+        <span>moves: <span class="vd-chip">VD-03</span></span>
+      </div>
+      <div class="drop-signal">Cross-brand purchase rate 4% → ≥9%</div>
+    </div>
+    <div class="drop-band">
+      <div class="drop-name">VDR-03 · Platform consolidation</div>
+      <div class="drop-meta">
+        <span>Month 18</span> ·
+        <span>touches: <span class="vd-chip">PA-01</span> <span class="vd-chip">PA-02</span> <span class="vd-chip">PA-03</span></span> ·
+        <span>moves: <span class="vd-chip">VD-01</span> <span class="vd-chip">VD-02</span></span>
+      </div>
+      <div class="drop-signal">Annual run-cost –35%; Magento decommissioned</div>
+    </div>
+    <div class="drop-band">
+      <div class="drop-name">VDR-04 · Loyalty unified</div>
+      <div class="drop-meta">
+        <span>Month 22</span> ·
+        <span>touches: <span class="vd-chip">PA-05</span></span> ·
+        <span>moves: <span class="vd-chip">VD-03</span></span>
+      </div>
+      <div class="drop-signal">CLV top 25% $340 → $420</div>
+    </div>
+  </div>
+
+  <!-- VALUE TREE FRAME -->
+  <div class="painted-frame">
+    <div class="frame-tag">VALUE TREE · PAINTED FROM SCHEMA</div>
+    <div class="frame-title">Business Value Map</div>
+    <div class="frame-subtitle">Three objectives · Four drivers · Five metrics</div>
+
+    <div class="tree">
+
+      <!-- Objectives row -->
+      <div class="tree-row">
+        <div class="tree-node objective">Reduce operating cost by FY28</div>
+        <div class="tree-node objective">Lift cross-brand customer value</div>
+        <div class="tree-node objective">Modernise digital commerce</div>
+      </div>
+
+      <!-- Drivers and metrics under each objective -->
+      <div class="tree-row">
+
+        <!-- Under objective 1 -->
+        <div>
+          <div class="driver-block">
+            <div class="tree-node driver">VD-01 · Platform consolidation</div>
+            <div class="metric tbd-baseline">
+              <span class="m-name">Annual run-cost</span>
+              <span class="m-baseline">TBD-baseline</span>
+              <span class="m-target">–35%</span>
+              <span class="m-horizon">12mo post</span>
+            </div>
+          </div>
+          <div class="driver-block">
+            <div class="tree-node driver">VD-02 · Ops consolidation</div>
+            <div class="metric">
+              <span class="m-name">FTE in commerce ops</span>
+              <span class="m-baseline">42</span>
+              <span class="m-target">28</span>
+              <span class="m-horizon">18mo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Under objective 2 -->
+        <div>
+          <div class="driver-block">
+            <div class="tree-node driver">VD-03 · Shared identity</div>
+            <div class="metric">
+              <span class="m-name">Cross-brand purchase rate</span>
+              <span class="m-baseline">4%</span>
+              <span class="m-target">≥9%</span>
+              <span class="m-horizon">18mo</span>
+            </div>
+            <div class="metric">
+              <span class="m-name">CLV (top 25%)</span>
+              <span class="m-baseline">$340</span>
+              <span class="m-target">$420</span>
+              <span class="m-horizon">24mo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Under objective 3 -->
+        <div>
+          <div class="driver-block">
+            <div class="tree-node driver">VD-04 · Checkout standard</div>
+            <div class="metric contested">
+              <span class="m-name">Cart abandonment (worst brand)</span>
+              <span class="m-baseline">71%</span>
+              <span class="m-target">≤61%</span>
+              <span class="m-horizon">6mo post</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HYPOTHESIS REGISTER FRAME -->
+  <div class="hyp-frame">
+    <div class="frame-tag">HYPOTHESIS REGISTER · PAINTED FROM SCHEMA</div>
+    <div class="frame-title">Falsifiable claims</div>
+    <div class="frame-subtitle">What Coach validates against, post-deployment</div>
+
+    <table class="hyp-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Claim</th>
+          <th>Metric</th>
+          <th>Confidence</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="id">VH-01</span></td>
+          <td>If we consolidate to one platform, then annual run-cost drops 35% within 12 months post-cutover, assuming brand-specific mechanics fit OOTB config.</td>
+          <td>SM-01</td>
+          <td><span class="conf-medium">medium</span></td>
+          <td>CFO</td>
+        </tr>
+        <tr>
+          <td><span class="id">VH-02</span></td>
+          <td>If shared customer identity is live across all brands, then cross-brand purchase rate lifts from 4% to ≥9% within 18 months, assuming opt-in consent rate ≥60%.</td>
+          <td>SM-03</td>
+          <td><span class="conf-high">high</span></td>
+          <td>CMO</td>
+        </tr>
+        <tr>
+          <td><span class="id">VH-03</span></td>
+          <td>If checkout is standardised across brands, then cart abandonment for the worst brand drops from 71% to ≤61% within 6 months post-cutover.</td>
+          <td>SM-04</td>
+          <td><span class="conf-low">low</span></td>
+          <td>Head of Digital</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMMENTS ZONE -->
+  <div class="comments-zone">
+    <div class="comments-label">Sponsor comments · review-mode markup</div>
+    <div class="comment-stickies">
+      <div class="comment-sticky">
+        TBD-baseline for run-cost is risky — finance owes us this number by end of week.
+        <div class="author">— S. Park, CEO</div>
+      </div>
+      <div class="comment-sticky">
+        VH-03 confidence "low" is honest — but we need to raise it before Gate A. What would it take?
+        <div class="author">— S. Park</div>
+      </div>
+      <div class="comment-sticky">
+        Add ROI hypothesis under SO-01? Board will ask.
+        <div class="author">— D. Patel, COO</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <div class="legend-title">Paint-back conventions</div>
+  <div class="legend-row">
+    <div class="legend-item">
+      <div class="legend-item-title">Three connected frames</div>
+      <div class="legend-item-desc">Chain + drops (top) · value tree (middle) · hypothesis register (bottom). The chain+drops frame is the structural backbone; the tree is the diagnosis; the register is the validation contract. Sponsors read top to bottom.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Chain + drops is read-mostly</div>
+      <div class="legend-item-desc">Drops are derived from drivers and the activities they touch. Editing drops on the paint-back creates inconsistency — drop edits flow through the Value Drivers workshop, not the paint-back. Sponsors comment on this frame via the comments zone instead.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Contested metrics flagged inline</div>
+      <div class="legend-item-desc">When framing_notes.contested_metrics references a metric, the painted metric carries a "contested" badge. Sponsors see the disagreement without opening separate framing notes.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">TBD-baseline highlighted</div>
+      <div class="legend-item-desc">Baselines flagged TBD render with a yellow background so sponsors know which numbers need sourcing. Reduces "is this real?" questions during review.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Confidence colour-coded</div>
+      <div class="legend-item-desc">Hypothesis confidence rendered in green (high) / orange (medium) / red (low). Low-confidence hypotheses are visible at a glance — they're the conversation starters.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footnote">
+  Visual reference for the FigJam paint-back frame Mladen builds in FigJam. Content is illustrative (Marlin Retail Group example). Schema field bindings and round-trip conventions are in <span style="font-family: ui-monospace, monospace;">figjam-output-rendering-spec.md §4</span>.
+</div>
+
+</body>
+</html>

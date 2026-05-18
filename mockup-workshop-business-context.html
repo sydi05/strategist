@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — workshop/business-context/v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1400px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .canvas {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+  .frame-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+    gap: 0;
+  }
+  .zone {
+    border-right: 1px dashed #D0D0CA;
+    border-bottom: 1px dashed #D0D0CA;
+    padding: 20px 24px;
+    min-height: 200px;
+    background: #FAFAF5;
+    position: relative;
+  }
+  .zone:nth-child(2n) { border-right: none; }
+  .zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .zone-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1A1A1A;
+  }
+  .zone-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .zone-tag.required { background: #2A6F4E; color: #fff; }
+  .zone-tag.optional { background: #C2C2BC; color: #1A1A1A; }
+  .zone-question {
+    font-size: 13px;
+    color: #4A4A4A;
+    margin-bottom: 14px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .stickies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .sticky {
+    width: 90px;
+    height: 90px;
+    padding: 10px;
+    border-radius: 2px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: #1A1A1A;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transform: rotate(-1deg);
+  }
+  .sticky:nth-child(2n) { transform: rotate(1deg); }
+  .sticky:nth-child(3n) { transform: rotate(-0.5deg); }
+  .sticky-yellow { background: #FFE066; }
+  .sticky-blue { background: #74C0FC; }
+  .sticky-pink { background: #F4B5C7; }
+  .sticky-green { background: #B5E0AA; }
+  .sticky-red { background: #FFA8A8; }
+  .sticky-purple { background: #C3A6E0; }
+  .sticky-orange { background: #FFC078; }
+  .sticky-grey { background: #DEE2E6; }
+  .sticky-large {
+    width: 220px;
+    height: 90px;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .sticky-medium {
+    width: 130px;
+    height: 70px;
+    font-size: 10px;
+  }
+  .convention {
+    font-size: 11px;
+    color: #6B6B6B;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dotted #D0D0CA;
+  }
+  .convention strong { color: #1A1A1A; font-weight: 600; }
+  .legend {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; gap: 6px; align-items: center; }
+  .legend-swatch { width: 16px; height: 16px; border-radius: 2px; }
+  .footnote {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: #6B6B6B;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Business Context workshop</h1>
+  <div class="meta">
+    <span class="code">workshop/business-context/v1</span>
+    · Feeds Strategist Output 1 (Vision)
+    · Spec: <span class="code">figjam-plugin-spec.md §3</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Business Context · 17 Apr 2026</div>
+    <div class="right">Facilitator: Ava Chen</div>
+  </div>
+
+  <div class="frame-grid">
+
+    <!-- ZONE 1: programme_trigger -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 1 · programme_trigger</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"What forced this conversation now?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-yellow">Vendor X end-of-life in 18 months</div>
+        <div class="sticky sticky-yellow">Board mandate to consolidate</div>
+        <div class="sticky sticky-yellow">New CEO 90-day plan</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> yellow stickies, one root cause per sticky.
+        Min 1 · Max 6.
+      </div>
+    </div>
+
+    <!-- ZONE 2: enterprise_priorities -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 2 · enterprise_priorities</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"Which of your enterprise strategic priorities does this programme advance?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-blue">Reduce operating cost by FY28</div>
+        <div class="sticky sticky-blue">Lift cross-brand customer value</div>
+        <div class="sticky sticky-blue">Modernise digital commerce</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> blue stickies, verbatim priority statement,
+        one per sticky. Optional reference link. Min 1 · Max 5.
+      </div>
+    </div>
+
+    <!-- ZONE 3: stated_intent -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 3 · stated_intent</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"In one sentence, what is this programme trying to do?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-pink sticky-large">"We need to move to Commerce Cloud."</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> large pink sticky, one statement only.
+        If room produces more than one, capture each as a sub-sticky and
+        flag for strategist to resolve. Min 1 · Max 3.
+      </div>
+    </div>
+
+    <!-- ZONE 4: success_signal -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 4 · success_signal</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"What would change, observably, if this programme worked?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-green">35% reduction in run cost</div>
+        <div class="sticky sticky-green">Cross-brand purchases 4% → 9%</div>
+        <div class="sticky sticky-green">Cart abandonment under 61%</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> green stickies, one signal per sticky.
+        Prefer measurable phrasing. Min 1 · Max 4.
+      </div>
+    </div>
+
+    <!-- ZONE 5: in_scope -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 5 · in_scope</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"Which capability areas does this programme address?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-green">Commerce experience</div>
+        <div class="sticky sticky-green">Customer identity</div>
+        <div class="sticky sticky-green">Catalogue management</div>
+        <div class="sticky sticky-green">Checkout &amp; payments</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> green stickies, one capability area per sticky.
+        Customer's vocabulary preserved. Min 1.
+      </div>
+    </div>
+
+    <!-- ZONE 6: out_of_scope -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 6 · out_of_scope</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"What's explicitly NOT in scope, even though someone in the room might assume it is?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-red">Store POS systems</div>
+        <div class="sticky sticky-red">Supply chain &amp; logistics</div>
+        <div class="sticky sticky-red">Brand merchandising autonomy</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> red stickies, one exclusion per sticky.
+        Name the assumption being ruled out. Min 1.
+      </div>
+    </div>
+
+    <!-- ZONE 7: sponsor -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 7 · sponsor</div>
+        <div class="zone-tag required">REQUIRED</div>
+      </div>
+      <div class="zone-question">"Who owns this programme at the executive level?"</div>
+      <div class="stickies">
+        <div class="sticky sticky-purple sticky-medium">Sarah Park<br>CEO<br>sarah.park@marlinretail.com.au</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> one purple sticky, format
+        "Name | Role | Email". Min 1 · Max 1 (more than one means there's
+        no sponsor).
+      </div>
+    </div>
+
+    <!-- ZONE 8: parking_lot -->
+    <div class="zone">
+      <div class="zone-header">
+        <div class="zone-title">Zone 8 · parking_lot</div>
+        <div class="zone-tag optional">OPTIONAL</div>
+      </div>
+      <div class="zone-question">Items the facilitator defers for later.</div>
+      <div class="stickies">
+        <div class="sticky sticky-orange">Pricing strategy?</div>
+        <div class="sticky sticky-orange">Loyalty programme</div>
+      </div>
+      <div class="convention">
+        <strong>Convention:</strong> orange stickies. Not extracted by the
+        plugin, but visible to the agent for context.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-title">Sticky colour conventions</div>
+  <div class="legend-row">
+    <div class="legend-item"><div class="legend-swatch" style="background:#FFE066"></div>Yellow — root causes / triggers</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#74C0FC"></div>Blue — enterprise priorities</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#F4B5C7"></div>Pink — stated intent (one only)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#B5E0AA"></div>Green — success signals + scope_in</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#FFA8A8"></div>Red — scope_out exclusions</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#C3A6E0"></div>Purple — sponsor</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#FFC078"></div>Orange — parking lot (not extracted)</div>
+  </div>
+</div>
+
+<div class="footnote">
+  This is a visual reference for the FigJam frame Mladen builds in FigJam itself. Stickies shown are illustrative — populated with Marlin Retail Group example content. Validation rules, extraction contract, and zone semantics are in <span style="font-family: ui-monospace, monospace;">figjam-plugin-spec.md §3</span>.
+</div>
+
+</body>
+</html>

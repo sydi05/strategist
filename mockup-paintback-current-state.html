@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — paint-back/strategist/current-state/v1 (PRIMARY SURFACE)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1500px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .primary-badge {
+    display: inline-block;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .canvas {
+    max-width: 1500px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+
+  /* Three-column canvas layout */
+  .canvas-body {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 0;
+    min-height: 700px;
+  }
+  .frame-zone {
+    padding: 24px;
+    border-right: 1px dashed #D0D0CA;
+    background: #FAFAF5;
+  }
+  .frame-zone:last-child { border-right: none; }
+  .frame-zone.centre { background: #FFFFFF; }
+  .frame-tag {
+    display: inline-block;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .frame-tag.primary { background: #08ABED; color: #FFFFFF; }
+  .frame-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .frame-subtitle { font-size: 11px; color: #6B6B6B; margin-bottom: 20px; }
+
+  /* Process pain cards (left) */
+  .pain-card {
+    background: #FFFFFF;
+    border: 1px solid #E0E0DC;
+    border-left: 3px solid #DC2626;
+    border-radius: 3px;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 11px;
+  }
+  .pain-card .process { font-weight: 600; margin-bottom: 4px; }
+  .pain-card .symptom { color: #4A4A4A; margin-bottom: 6px; line-height: 1.4; }
+  .pain-card .signal-label {
+    font-size: 9px;
+    color: #C2410C;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+  }
+  .pain-card .signal {
+    font-style: italic;
+    color: #4A4A4A;
+    line-height: 1.4;
+    font-size: 10px;
+  }
+  .pain-card .affected {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dotted #E0E0DC;
+    font-size: 9px;
+    color: #6B6B6B;
+  }
+  .pain-card .affected .chip {
+    display: inline-block;
+    background: #F0F0EC;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-right: 4px;
+    font-family: ui-monospace, monospace;
+  }
+
+  /* Heat map (centre) */
+  .heatmap {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .heatmap th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 2px solid #1A1A1A;
+    background: #FFFFFF;
+  }
+  .heatmap th.cell-header {
+    text-align: center;
+    width: 95px;
+  }
+  .heatmap td {
+    padding: 0;
+    border-bottom: 1px solid #F0F0EC;
+  }
+  .heatmap .cap-row td:first-child { padding: 10px 12px; }
+  .heatmap .cap-name { font-weight: 500; font-size: 11px; }
+  .heatmap .cap-ref { font-size: 9px; color: #8B8B8B; font-family: ui-monospace, monospace; margin-top: 2px; }
+  .heatmap .cap-cell {
+    text-align: center;
+    height: 36px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #1A1A1A;
+  }
+  .cell-cov-full { background: #4ADE80; color: #14532D; }
+  .cell-cov-partial { background: #FDE047; color: #713F12; }
+  .cell-cov-none { background: #FCA5A5; color: #7F1D1D; }
+  .cell-mat-1 { background: #FECACA; color: #7F1D1D; }
+  .cell-mat-2 { background: #FED7AA; color: #7C2D12; }
+  .cell-mat-3 { background: #FEF08A; color: #713F12; }
+  .cell-mat-4 { background: #BBF7D0; color: #14532D; }
+  .cell-mat-5 { background: #86EFAC; color: #14532D; }
+  .cell-mat-blank { background: #F3F4F6; color: #9CA3AF; }
+  .cell-pain-high { background: #DC2626; color: #FFFFFF; }
+  .cell-pain-med { background: #F59E0B; color: #FFFFFF; }
+  .cell-pain-low { background: #FECACA; color: #7F1D1D; }
+  .cell-flag { position: relative; }
+  .cell-flag::after {
+    content: '⚠';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 11px;
+    color: #FF5D2D;
+  }
+
+  /* System landscape cards (right) */
+  .system-card {
+    background: #FFFFFF;
+    border: 1px solid #E0E0DC;
+    border-left: 3px solid #08ABED;
+    border-radius: 3px;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 11px;
+  }
+  .system-card.strain {
+    border-left-color: #DC2626;
+    background: #FEF2F2;
+  }
+  .system-card .name { font-weight: 600; margin-bottom: 4px; }
+  .system-card .role { font-size: 10px; color: #6B6B6B; margin-bottom: 6px; line-height: 1.4; }
+  .system-card .strain-flag {
+    font-size: 9px;
+    background: #DC2626;
+    color: #FFFFFF;
+    padding: 2px 6px;
+    border-radius: 2px;
+    display: inline-block;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .system-card .strain-signal {
+    font-style: italic;
+    color: #4A4A4A;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  /* Overflow zone (full width below) */
+  .overflow-zone {
+    margin: 0 32px 32px;
+    padding: 20px 24px;
+    background: #FEF3C7;
+    border: 1px dashed #F59E0B;
+    border-radius: 4px;
+  }
+  .overflow-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #92400E;
+    margin-bottom: 12px;
+  }
+  .overflow-list { display: flex; gap: 10px; flex-wrap: wrap; }
+  .overflow-item {
+    background: #FFFFFF;
+    border: 1px solid #F59E0B;
+    border-left: 3px solid #FF5D2D;
+    padding: 8px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    max-width: 280px;
+  }
+  .overflow-item .label {
+    font-size: 9px;
+    color: #92400E;
+    font-weight: 600;
+    margin-bottom: 2px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Comments zone */
+  .comments-zone {
+    background: #FAFAF5;
+    margin: 0 32px 32px;
+    padding: 24px;
+    border: 1px dashed #D0D0CA;
+    border-radius: 4px;
+  }
+  .comments-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4A4A4A;
+    margin-bottom: 14px;
+  }
+  .comment-stickies { display: flex; gap: 12px; flex-wrap: wrap; }
+  .comment-sticky {
+    width: 180px;
+    padding: 10px 12px;
+    background: #FFF9C4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    font-size: 11px;
+    line-height: 1.4;
+    transform: rotate(-1deg);
+    border-radius: 2px;
+  }
+  .comment-sticky:nth-child(2n) { transform: rotate(1deg); background: #F8BBD0; }
+  .comment-sticky:nth-child(3n) { transform: rotate(-0.5deg); background: #BBDEFB; }
+  .comment-sticky .author {
+    font-size: 9px;
+    color: #6B6B6B;
+    margin-top: 6px;
+    border-top: 1px dotted rgba(0,0,0,0.15);
+    padding-top: 4px;
+  }
+
+  .legend {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .legend-item { max-width: 280px; }
+  .legend-item-title { font-weight: 500; margin-bottom: 4px; font-size: 12px; }
+  .legend-item-desc { font-size: 11px; color: #6B6B6B; line-height: 1.5; }
+  .footnote {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: #6B6B6B;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .key-pattern {
+    max-width: 1500px;
+    margin: 16px auto 0;
+    padding: 16px 20px;
+    background: #FFF9E6;
+    border: 1px solid #F0AD4E;
+    border-left: 4px solid #F0AD4E;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .key-pattern strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Current-State paint-back <span class="primary-badge">PRIMARY SURFACE</span></h1>
+  <div class="meta">
+    <span class="code">paint-back/strategist/current-state/v1</span>
+    · Output 3's canonical deliverable lives on canvas, not in the deck
+    · Spec: <span class="code">figjam-output-rendering-spec.md §5</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Current-State Assessment · 30 Apr 2026</div>
+    <div class="right">v1 · Painted from blackboard</div>
+  </div>
+
+  <div class="canvas-body">
+
+    <!-- LEFT: Process pain register -->
+    <div class="frame-zone">
+      <div class="frame-tag">PROCESS PAIN REGISTER</div>
+      <div class="frame-title">What hurts today</div>
+      <div class="frame-subtitle">Signals, not findings — root cause TBD</div>
+
+      <div class="pain-card">
+        <div class="process">Checkout (Brand 4)</div>
+        <div class="symptom">71% cart abandonment after PayPal selection</div>
+        <div class="signal-label">Root-cause signal</div>
+        <div class="signal">Custom checkout extension caches PayPal token incorrectly across sessions</div>
+        <div class="affected">
+          Affects:
+          <span class="chip">L1-CART</span>
+          <span class="chip">L1-PAY</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="process">Catalogue sync (cross-brand)</div>
+        <div class="symptom">12–18hr lag between brand catalogues; cross-brand recs serve stale stock</div>
+        <div class="signal-label">Root-cause signal</div>
+        <div class="signal">Four divergent catalogue systems sync to a single PIM nightly; no real-time path</div>
+        <div class="affected">
+          Affects:
+          <span class="chip">L1-CAT</span>
+          <span class="chip">L1-IDENT</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="process">Loyalty redemption</div>
+        <div class="symptom">Brand 2 redemptions fail silently when cart contains Brand 3 items</div>
+        <div class="signal-label">Root-cause signal</div>
+        <div class="signal">Per-brand loyalty rules in custom code; cross-brand carts hit a code path never tested</div>
+        <div class="affected">
+          Affects:
+          <span class="chip">L1-LOY</span>
+          <span class="chip">L1-CART</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRE: Capability heat map -->
+    <div class="frame-zone centre">
+      <div class="frame-tag primary">CAPABILITY HEAT MAP · CENTRAL DELIVERABLE</div>
+      <div class="frame-title">Coverage × Maturity × Pain</div>
+      <div class="frame-subtitle">Where the gap is. The artefact sponsors screenshot and share.</div>
+
+      <table class="heatmap">
+        <thead>
+          <tr>
+            <th style="width: 38%;">Capability</th>
+            <th class="cell-header">Coverage</th>
+            <th class="cell-header">Maturity</th>
+            <th class="cell-header">Pain</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Commerce experience</div>
+              <div class="cap-ref">L1-COMM</div>
+            </td>
+            <td class="cap-cell cell-cov-partial">PARTIAL</td>
+            <td class="cap-cell cell-mat-2">2</td>
+            <td class="cap-cell cell-pain-high">HIGH</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Customer identity</div>
+              <div class="cap-ref">L1-IDENT</div>
+            </td>
+            <td class="cap-cell cell-cov-none">NONE</td>
+            <td class="cap-cell cell-mat-blank">—</td>
+            <td class="cap-cell cell-pain-high">HIGH</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Catalogue management</div>
+              <div class="cap-ref">L1-CAT</div>
+            </td>
+            <td class="cap-cell cell-cov-partial cell-flag">PARTIAL</td>
+            <td class="cap-cell cell-mat-2">2</td>
+            <td class="cap-cell cell-pain-high">HIGH</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Checkout</div>
+              <div class="cap-ref">L1-CART</div>
+            </td>
+            <td class="cap-cell cell-cov-full">FULL</td>
+            <td class="cap-cell cell-mat-3">3</td>
+            <td class="cap-cell cell-pain-high">HIGH</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Payments</div>
+              <div class="cap-ref">L1-PAY</div>
+            </td>
+            <td class="cap-cell cell-cov-full">FULL</td>
+            <td class="cap-cell cell-mat-4">4</td>
+            <td class="cap-cell cell-pain-med">MED</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Loyalty</div>
+              <div class="cap-ref">L1-LOY</div>
+            </td>
+            <td class="cap-cell cell-cov-partial cell-flag">PARTIAL</td>
+            <td class="cap-cell cell-mat-2">2</td>
+            <td class="cap-cell cell-pain-high">HIGH</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Fulfilment</div>
+              <div class="cap-ref">L1-FUL</div>
+            </td>
+            <td class="cap-cell cell-cov-full">FULL</td>
+            <td class="cap-cell cell-mat-3">3</td>
+            <td class="cap-cell cell-pain-low">LOW</td>
+          </tr>
+          <tr class="cap-row">
+            <td>
+              <div class="cap-name">Order management</div>
+              <div class="cap-ref">L1-ORD</div>
+            </td>
+            <td class="cap-cell cell-cov-full">FULL</td>
+            <td class="cap-cell cell-mat-4">4</td>
+            <td class="cap-cell cell-pain-low">LOW</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- RIGHT: System landscape -->
+    <div class="frame-zone">
+      <div class="frame-tag">SYSTEM LANDSCAPE</div>
+      <div class="frame-title">What runs commerce today</div>
+      <div class="frame-subtitle">Strain signals shape target-state options</div>
+
+      <div class="system-card strain">
+        <div class="strain-flag">END OF LIFE</div>
+        <div class="name">Magento (Brand 4)</div>
+        <div class="role">E-commerce platform · Brand 4 storefront</div>
+        <div class="strain-signal">Vendor support ends Q3 FY26</div>
+      </div>
+
+      <div class="system-card strain">
+        <div class="strain-flag">SATURATING</div>
+        <div class="name">SAP Commerce (Brands 1+2)</div>
+        <div class="role">Shared commerce platform</div>
+        <div class="strain-signal">Catalogue sync hitting throughput limit on peak days</div>
+      </div>
+
+      <div class="system-card">
+        <div class="name">Shopify Plus (Brand 3)</div>
+        <div class="role">E-commerce platform · Brand 3</div>
+      </div>
+
+      <div class="system-card">
+        <div class="name">Salesforce Service Cloud</div>
+        <div class="role">Contact centre · cross-brand</div>
+      </div>
+
+      <div class="system-card strain">
+        <div class="strain-flag">BRITTLE</div>
+        <div class="name">Custom loyalty engine</div>
+        <div class="role">Per-brand loyalty rules</div>
+        <div class="strain-signal">No automated tests; cross-brand carts uncovered</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCOPE OVERFLOW (full-width) -->
+  <div class="overflow-zone">
+    <div class="overflow-label">⚠ Scope overflow · framing_notes</div>
+    <div class="overflow-list">
+      <div class="overflow-item">
+        <div class="label">Outside scope_in</div>
+        Store POS pain — significant, but vision scoped this out
+      </div>
+      <div class="overflow-item">
+        <div class="label">Outside scope_in</div>
+        Supply chain visibility — gap exists but not in this programme
+      </div>
+      <div class="overflow-item">
+        <div class="label">Unverified signal</div>
+        Loyalty pain points lack operational data — interview-only
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMENTS ZONE -->
+  <div class="comments-zone">
+    <div class="comments-label">Sponsor comments · review-mode markup</div>
+    <div class="comment-stickies">
+      <div class="comment-sticky">
+        Catalogue pain is worse than this shows — there's a Brand 2 incident weekly.
+        <div class="author">— D. Patel, COO</div>
+      </div>
+      <div class="comment-sticky">
+        Loyalty pain "unverified" — let's pull tickets data before Gate A.
+        <div class="author">— S. Park, CEO</div>
+      </div>
+      <div class="comment-sticky">
+        Are we sure POS is out of scope? Board will ask.
+        <div class="author">— S. Park</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="key-pattern">
+  <strong>Why this is the primary surface.</strong>
+  A capability heat map is the kind of artefact people screenshot and share. The grid format is dense, scannable, and emotionally resonant — red cells draw attention without explanation. Renders well on canvas, renders badly on slides (the deck version is a summary, not the full grid). Mladen's paint-back routine for this output is more design-sensitive than any of the previous three because the canvas <em>is</em> the deliverable.
+</div>
+
+<div class="legend">
+  <div class="legend-title">Paint-back conventions</div>
+  <div class="legend-row">
+    <div class="legend-item">
+      <div class="legend-item-title">Three connected frames</div>
+      <div class="legend-item-desc">Process pain (left) · capability heat map (centre, largest) · system landscape (right). The heat map is the load-bearing frame; the side frames provide context.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Signal vs finding language</div>
+      <div class="legend-item-desc">Pain cards say "Root-cause signal" not "Root cause." The strategist surfaces signals; proving root cause is the Analyst-Compiler's job in Stage 2. This discipline lives in the labels.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Heat map colours mean specific things</div>
+      <div class="legend-item-desc">Coverage: green/yellow/red for full/partial/none. Maturity: gradient by score 1–5 (darker = lower). Pain: red/orange/pink for high/medium/low. Capability name + Salesforce reference both visible — mismatches flagged.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Framing notes painted inline</div>
+      <div class="legend-item-desc">Scope_overflow and unverified_signals get their own zone above the comments — visible to sponsors during review without requiring a separate appendix. The agent does not silently absorb these into the assessment.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Two interaction modes</div>
+      <div class="legend-item-desc">Default <strong>review mode</strong> — sponsors add comment stickies, comments don't mutate the schema. Optional <strong>workshop iteration mode</strong> — specific cells or cards become directly editable. Mode set per session by the facilitator.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footnote">
+  Visual reference for the FigJam paint-back frame Mladen builds in FigJam. Content is illustrative (Marlin Retail Group example). Schema field bindings, mode switching, and round-trip conventions are in <span style="font-family: ui-monospace, monospace;">figjam-output-rendering-spec.md §5</span>.
+</div>
+
+</body>
+</html>

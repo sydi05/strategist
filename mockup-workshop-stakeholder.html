@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — workshop/stakeholder/v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1500px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .canvas {
+    max-width: 1500px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+
+  .zone {
+    padding: 24px;
+    border-bottom: 1px dashed #D0D0CA;
+  }
+  .zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .zone-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .zone-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .zone-tag.required { background: #2A6F4E; color: #fff; }
+  .zone-tag.optional { background: #C2C2BC; color: #1A1A1A; }
+  .zone-tag.private { background: #7E22CE; color: #fff; }
+  .zone-question { font-size: 13px; color: #4A4A4A; margin-bottom: 16px; font-style: italic; }
+
+  /* Power-interest grid (2x2) */
+  .grid-container {
+    display: grid;
+    grid-template-columns: 60px 1fr 1fr;
+    grid-template-rows: 30px 1fr 1fr;
+    gap: 4px;
+    min-height: 440px;
+  }
+  .grid-corner { background: transparent; }
+  .grid-x-label, .grid-y-label {
+    background: transparent;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .grid-y-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 4px 0;
+  }
+  .quadrant {
+    background: #FFFFFF;
+    border: 1px solid #E0E0DC;
+    border-radius: 4px;
+    padding: 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .quadrant-label {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 9px;
+    color: #8B8B8B;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .quadrant.manage-closely { background: #FEF2F2; }
+  .quadrant.keep-satisfied { background: #FEF3C7; }
+  .quadrant.keep-informed { background: #ECFDF5; }
+  .quadrant.monitor { background: #F8F9FA; }
+  .stakeholder-sticky {
+    background: #C3A6E0;
+    padding: 6px 10px;
+    border-radius: 2px;
+    font-size: 10px;
+    line-height: 1.3;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    font-weight: 500;
+  }
+  .stakeholder-sticky .role {
+    font-size: 9px;
+    color: #4A4A4A;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* Decision authority table */
+  .decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .decision-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #D0D0CA;
+  }
+  .decision-table td {
+    padding: 10px;
+    border-bottom: 1px solid #F0F0EC;
+    vertical-align: top;
+  }
+  .decision-table .decision-name { font-weight: 600; }
+  .decision-table .role-chip {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-right: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .role-r { background: #DBEAFE; color: #1E40AF; }
+  .role-a { background: #FED7AA; color: #7C2D12; }
+  .role-c { background: #E0E7FF; color: #3730A3; }
+  .role-i { background: #F3F4F6; color: #4B5563; }
+
+  /* Governance forums */
+  .forum-row {
+    display: grid;
+    grid-template-columns: 220px 80px 80px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F0F0EC;
+    font-size: 11px;
+    align-items: center;
+  }
+  .forum-row.header {
+    font-size: 10px;
+    color: #6B6B6B;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #D0D0CA;
+    padding-bottom: 8px;
+  }
+  .forum-name { font-weight: 600; }
+  .forum-decides { color: #4A4A4A; }
+
+  /* Communication plan zone */
+  .comm-stickies { display: flex; gap: 10px; flex-wrap: wrap; }
+  .comm-sticky {
+    width: 220px;
+    padding: 10px 12px;
+    background: #BBF7D0;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    font-size: 11px;
+    line-height: 1.4;
+    border-radius: 2px;
+  }
+  .comm-sticky .cohort { font-weight: 600; margin-bottom: 4px; }
+  .comm-sticky .cadence { font-size: 9px; color: #166534; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.04em; }
+  .comm-sticky .channel { font-size: 10px; color: #4A4A4A; }
+
+  /* Political signals zone — visually distinct, locked-down */
+  .private-zone {
+    background: #2D1B3D;
+    color: #E9D5FF;
+    padding: 24px;
+    margin-top: 0;
+    border-top: 4px solid #7E22CE;
+  }
+  .private-zone .zone-title { color: #E9D5FF; }
+  .private-zone .zone-question { color: #C4A5E0; }
+  .private-zone .private-banner {
+    background: #7E22CE;
+    color: #FFFFFF;
+    padding: 8px 14px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .political-sticky {
+    background: #4C1D6F;
+    color: #F3E8FF;
+    padding: 10px 12px;
+    border-radius: 2px;
+    font-size: 10px;
+    line-height: 1.4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.3);
+    margin-bottom: 8px;
+    border-left: 3px solid #C084FC;
+  }
+  .political-sticky strong { color: #FFFFFF; font-weight: 600; }
+  .political-stickies { display: flex; gap: 10px; flex-wrap: wrap; }
+  .political-sticky-w { width: 280px; }
+
+  .convention {
+    font-size: 11px;
+    color: #6B6B6B;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dotted #D0D0CA;
+  }
+  .convention strong { color: #1A1A1A; font-weight: 600; }
+  .private-zone .convention {
+    color: #C4A5E0;
+    border-top: 1px dotted #7E22CE;
+  }
+  .private-zone .convention strong { color: #FFFFFF; }
+
+  .key-pattern {
+    max-width: 1500px;
+    margin: 16px auto 0;
+    padding: 16px 20px;
+    background: #4C1D6F;
+    color: #FFFFFF;
+    border-left: 4px solid #C084FC;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .key-pattern strong { font-weight: 600; color: #FFFFFF; }
+  .key-pattern .lock {
+    display: inline-block;
+    background: #C084FC;
+    color: #2D1B3D;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-right: 8px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .legend {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; gap: 6px; align-items: center; }
+  .legend-swatch { width: 16px; height: 16px; border-radius: 2px; }
+
+  .footnote {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: #6B6B6B;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Stakeholder workshop</h1>
+  <div class="meta">
+    <span class="code">workshop/stakeholder/v1</span>
+    · Feeds Strategist Output 4 (Stakeholder Map and Engagement Approach)
+    · Spec: <span class="code">figjam-plugin-spec.md §6</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Stakeholder workshop · 2 May 2026</div>
+    <div class="right">Facilitator: Ava Chen</div>
+  </div>
+
+  <!-- ZONE 1: Power-Interest Grid -->
+  <div class="zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 1 · power_interest_grid</div>
+        <div class="zone-question" style="margin-top:6px;">
+          "Place each stakeholder on the grid by their power over the programme and their interest in it."
+        </div>
+      </div>
+      <div class="zone-tag required">REQUIRED</div>
+    </div>
+
+    <div class="grid-container">
+      <div class="grid-corner"></div>
+      <div class="grid-x-label">Low interest</div>
+      <div class="grid-x-label">High interest</div>
+
+      <div class="grid-y-label">High power</div>
+      <div class="quadrant keep-satisfied">
+        <div class="quadrant-label">Keep satisfied</div>
+        <div class="stakeholder-sticky">
+          David Patel
+          <div class="role">COO</div>
+        </div>
+        <div class="stakeholder-sticky">
+          James Wright
+          <div class="role">CFO</div>
+        </div>
+      </div>
+      <div class="quadrant manage-closely">
+        <div class="quadrant-label">Manage closely</div>
+        <div class="stakeholder-sticky">
+          Sarah Park
+          <div class="role">CEO · Sponsor</div>
+        </div>
+        <div class="stakeholder-sticky">
+          Linda Cho
+          <div class="role">CMO</div>
+        </div>
+        <div class="stakeholder-sticky">
+          Brand 4 MD (Marcus Eng)
+          <div class="role">Most vocal sceptic</div>
+        </div>
+      </div>
+
+      <div class="grid-y-label">Low power</div>
+      <div class="quadrant monitor">
+        <div class="quadrant-label">Monitor</div>
+        <div class="stakeholder-sticky">
+          External tax advisor
+          <div class="role">PwC</div>
+        </div>
+      </div>
+      <div class="quadrant keep-informed">
+        <div class="quadrant-label">Keep informed</div>
+        <div class="stakeholder-sticky">
+          Head of Digital
+          <div class="role">Maya Rao</div>
+        </div>
+        <div class="stakeholder-sticky">
+          Brand 2 marketing lead
+          <div class="role">Sam Kim</div>
+        </div>
+        <div class="stakeholder-sticky">
+          Customer service ops
+          <div class="role">Sienna Lee</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="convention">
+      <strong>Convention:</strong> purple stickies, format "Name | Role".
+      Position determines engagement approach: manage-closely (high power, high interest) gets executive briefings; keep-satisfied gets governance forum attendance; keep-informed gets cohort updates; monitor gets light touch.
+      <br><br>
+      <strong>Disposition (supportive / neutral / sceptical) is captured separately in Zone 2 — not encoded in colour here.</strong>
+    </div>
+  </div>
+
+  <!-- ZONE 2: Stakeholder Dispositions -->
+  <div class="zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 2 · stakeholder_dispositions</div>
+        <div class="zone-question" style="margin-top:6px;">
+          "For each named stakeholder — what's their current stance, and what would they need to actively support the programme?"
+        </div>
+      </div>
+      <div class="zone-tag required">REQUIRED</div>
+    </div>
+
+    <table class="decision-table">
+      <thead>
+        <tr>
+          <th style="width: 22%;">Stakeholder</th>
+          <th style="width: 14%;">Disposition</th>
+          <th style="width: 32%;">What they care about</th>
+          <th>What they need to actively support</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="decision-name">Sarah Park</span> (CEO)</td>
+          <td><strong style="color:#166534;">Champion</strong></td>
+          <td>Board credibility; FY27 deadline</td>
+          <td>Already supportive — sustain by hitting Gate A on time</td>
+        </tr>
+        <tr>
+          <td><span class="decision-name">David Patel</span> (COO)</td>
+          <td><strong style="color:#1971C2;">Supportive</strong></td>
+          <td>Operational risk; staff capacity</td>
+          <td>Change-impact narrative for the 42 commerce-ops FTE</td>
+        </tr>
+        <tr>
+          <td><span class="decision-name">James Wright</span> (CFO)</td>
+          <td><strong style="color:#92400E;">Neutral</strong></td>
+          <td>ROM accuracy; ROI within 24 months</td>
+          <td>Defensible ROM with Feasibility-validated horizons</td>
+        </tr>
+        <tr>
+          <td><span class="decision-name">Linda Cho</span> (CMO)</td>
+          <td><strong style="color:#1971C2;">Supportive</strong></td>
+          <td>Cross-brand customer journey; loyalty unification</td>
+          <td>Driver VD-03 (shared identity) protected in chosen option</td>
+        </tr>
+        <tr>
+          <td><span class="decision-name">Marcus Eng</span> (B4 MD)</td>
+          <td><strong style="color:#991B1B;">Sceptical</strong></td>
+          <td>Brand 4 autonomy; differentiated checkout</td>
+          <td>Explicit protection of B4 brand-specific 20% in target architecture</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="convention">
+      <strong>Convention:</strong> facilitator captures dispositions in
+      the room from observed signals. "What they need to actively support"
+      is the engagement plan input — not a wish list.
+    </div>
+  </div>
+
+  <!-- ZONE 3: Decision Authority -->
+  <div class="zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 3 · decision_authority</div>
+        <div class="zone-question" style="margin-top:6px;">
+          "For each load-bearing decision in this programme — who is Responsible, Accountable, Consulted, Informed?"
+        </div>
+      </div>
+      <div class="zone-tag required">REQUIRED</div>
+    </div>
+
+    <table class="decision-table">
+      <thead>
+        <tr>
+          <th style="width: 28%;">Decision</th>
+          <th style="width: 14%;">When</th>
+          <th>RACI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="decision-name">Approve framing (Gate A)</span></td>
+          <td>End of May 2026</td>
+          <td>
+            <span class="role-chip role-a">A</span> CEO ·
+            <span class="role-chip role-r">R</span> Strategist + lead BSA ·
+            <span class="role-chip role-c">C</span> COO, CFO, CMO ·
+            <span class="role-chip role-i">I</span> Steering committee
+          </td>
+        </tr>
+        <tr>
+          <td><span class="decision-name">Select strategic option (Gate B)</span></td>
+          <td>Mid June 2026</td>
+          <td>
+            <span class="role-chip role-a">A</span> CEO ·
+            <span class="role-chip role-r">R</span> Strategist ·
+            <span class="role-chip role-c">C</span> COO, CFO, CMO, Brand MDs ·
+            <span class="role-chip role-i">I</span> Board
+          </td>
+        </tr>
+        <tr>
+          <td><span class="decision-name">Approve business case</span></td>
+          <td>End of July 2026</td>
+          <td>
+            <span class="role-chip role-a">A</span> Board ·
+            <span class="role-chip role-r">R</span> CEO + CFO ·
+            <span class="role-chip role-c">C</span> Strategist, COO ·
+            <span class="role-chip role-i">I</span> Senior leadership
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="convention">
+      <strong>Convention:</strong> only load-bearing decisions
+      (programme-defining, not operational). RACI is for THIS programme,
+      not standing org RACI. One A per decision — multiple As means
+      the framing is wrong.
+    </div>
+  </div>
+
+  <!-- ZONE 4: Governance Forums -->
+  <div class="zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 4 · governance_forums</div>
+        <div class="zone-question" style="margin-top:6px;">
+          "What forums govern this programme — what do they decide, who attends, how often?"
+        </div>
+      </div>
+      <div class="zone-tag required">REQUIRED</div>
+    </div>
+
+    <div class="forum-row header">
+      <div>Forum</div>
+      <div>Cadence</div>
+      <div>Quorum</div>
+      <div>Decides</div>
+    </div>
+    <div class="forum-row">
+      <div class="forum-name">Programme Steering Committee</div>
+      <div>Fortnightly</div>
+      <div>3 of 4</div>
+      <div class="forum-decides">Scope changes, risk acceptance, gate approvals</div>
+    </div>
+    <div class="forum-row">
+      <div class="forum-name">Architecture Review Board</div>
+      <div>Monthly</div>
+      <div>4 of 6</div>
+      <div class="forum-decides">Technical direction, integration patterns, deviations</div>
+    </div>
+    <div class="forum-row">
+      <div class="forum-name">Brand Council</div>
+      <div>Monthly</div>
+      <div>All 4 brands</div>
+      <div class="forum-decides">Brand-specific carve-outs, customer experience trade-offs</div>
+    </div>
+    <div class="forum-row">
+      <div class="forum-name">Sponsor 1:1</div>
+      <div>Weekly</div>
+      <div>1:1</div>
+      <div class="forum-decides">Direction, escalations, sponsor alignment</div>
+    </div>
+
+    <div class="convention">
+      <strong>Convention:</strong> existing forums preferred — only invent
+      new ones if a gap is structural. Each forum's "decides" field is
+      verbatim; "things discussed" is not equivalent.
+    </div>
+  </div>
+
+  <!-- ZONE 5: Communication Plan -->
+  <div class="zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 5 · communication_plan</div>
+        <div class="zone-question" style="margin-top:6px;">
+          "For each cohort — what cadence, what channel, what does success look like for keeping them informed?"
+        </div>
+      </div>
+      <div class="zone-tag required">REQUIRED</div>
+    </div>
+
+    <div class="comm-stickies">
+      <div class="comm-sticky">
+        <div class="cohort">Brand teams (all 4)</div>
+        <div class="cadence">FORTNIGHTLY</div>
+        <div class="channel">Brand Council readout + Slack channel · success: each brand can articulate the programme intent in their own words</div>
+      </div>
+      <div class="comm-sticky">
+        <div class="cohort">Commerce ops (42 FTE)</div>
+        <div class="cadence">MONTHLY</div>
+        <div class="channel">Town hall + manager cascade · success: no FTE learns about role changes from rumour</div>
+      </div>
+      <div class="comm-sticky">
+        <div class="cohort">Customer service ops</div>
+        <div class="cadence">MONTHLY</div>
+        <div class="channel">CS lead briefing · success: agents can answer cross-brand questions before cutover</div>
+      </div>
+      <div class="comm-sticky">
+        <div class="cohort">Board</div>
+        <div class="cadence">GATE-DRIVEN</div>
+        <div class="channel">Formal paper · success: board approves at each gate without re-litigation</div>
+      </div>
+    </div>
+
+    <div class="convention">
+      <strong>Convention:</strong> green stickies. Each cohort needs a
+      cadence, a channel, and a success signal. Generic "all-hands updates"
+      is not a plan.
+    </div>
+  </div>
+
+  <!-- ZONE 6: PARKING LOT -->
+  <div class="zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 6 · parking_lot</div>
+      </div>
+      <div class="zone-tag optional">OPTIONAL</div>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <div style="background:#DEE2E6; padding:6px 10px; font-size:10px; border-radius:2px;">Union consultation timeline</div>
+      <div style="background:#DEE2E6; padding:6px 10px; font-size:10px; border-radius:2px;">Franchise advisory board (3 stores)</div>
+    </div>
+  </div>
+
+  <!-- ZONE 7: POLITICAL SIGNALS (PRIVATE) -->
+  <div class="private-zone">
+    <div class="zone-header">
+      <div>
+        <div class="zone-title">Zone 7 · political_signals</div>
+        <div class="zone-question" style="margin-top:6px;">
+          For the facilitator's record only — what's NOT being said in the room?
+        </div>
+      </div>
+      <div class="zone-tag private">FACILITATOR-PRIVATE</div>
+    </div>
+
+    <div class="private-banner">
+      🔒 Captured by facilitator after the workshop. Not visible to participants. Never rendered to any sponsor-facing surface.
+    </div>
+
+    <div class="political-stickies">
+      <div class="political-sticky political-sticky-w">
+        <strong>Marcus Eng (B4 MD)</strong> opposed in private 1:1 but stayed silent in the workshop. Carries informal veto if Brand 4 customer numbers drop in any quarter.
+      </div>
+      <div class="political-sticky political-sticky-w">
+        <strong>CFO–CMO tension</strong> on cost-vs-growth framing surfaced indirectly in Output 2; unspoken but present in this workshop too. Watch for proxy fights over Option 5 trade-offs.
+      </div>
+      <div class="political-sticky political-sticky-w">
+        <strong>Sponsor's spouse</strong> on Brand 2 advisory board. Sponsor has not declared. Not material to scope but track for procurement decisions.
+      </div>
+      <div class="political-sticky political-sticky-w">
+        <strong>Acting Head of Digital</strong> (Maya) wants the permanent role; declared support contingent on her leading the technical workstreams. Capability-driven decision, not political — but be aware.
+      </div>
+    </div>
+
+    <div class="convention">
+      <strong>Convention:</strong> dark purple stickies. Captured in the
+      facilitator's private working zone — separate FigJam frame or notes
+      doc, not the shared workshop canvas. The plugin extracts this content
+      into <code style="color:#E9D5FF;background:#4C1D6F;padding:1px 4px;font-family:ui-monospace,monospace;">framing_notes.political_signals</code>
+      on the blackboard, where it informs engagement-planning logic.
+      <br><br>
+      <strong>The render functions hard-strip this field before any visible
+      artefact is produced.</strong> Politics shapes engagement; politics
+      does not render.
+    </div>
+  </div>
+
+</div>
+
+<div class="key-pattern">
+  <span class="lock">🔒 LOAD-BEARING</span>
+  <strong>Political signals are blackboard-only.</strong>
+  Zone 7 is the only zone in the entire Strategist workflow that is captured but never rendered. The facilitator collects political content in a private working zone; the plugin writes it to <code style="background:#7E22CE;padding:1px 5px;border-radius:2px;font-family:ui-monospace,monospace;">framing_notes.political_signals</code> on the blackboard. The render functions for the Stakeholder paint-back and the Stakeholder deck both <strong>hard-strip this field</strong> before producing any visible artefact. Politics cannot leak through screenshots, shares, exports, or sponsor previews. This is enforced at render time, not by convention.
+</div>
+
+<div class="legend">
+  <div class="legend-title">Sticky colour conventions</div>
+  <div class="legend-row">
+    <div class="legend-item"><div class="legend-swatch" style="background:#C3A6E0"></div>Purple — stakeholders on the grid</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#BBF7D0"></div>Green — communication plan cohorts</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#DEE2E6"></div>Grey — parking lot</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#4C1D6F"></div>Dark purple — political signals (PRIVATE)</div>
+  </div>
+</div>
+
+<div class="footnote">
+  Visual reference for the FigJam frame Mladen builds in FigJam. Content is illustrative (Marlin Retail Group example, fictional stakeholders). Field bindings, validation rules, the political signals capture mechanism, and the render-time strip enforcement are in <span style="font-family: ui-monospace, monospace;">figjam-plugin-spec.md §6</span> and <span style="font-family: ui-monospace, monospace;">strategist-output-4-stakeholder.md §4</span>.
+</div>
+
+</body>
+</html>

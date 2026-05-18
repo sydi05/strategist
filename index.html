@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiftFlow Strategist · Visual gallery</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #01172F;
+    color: #F3F3F3;
+    line-height: 1.5;
+  }
+  .container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid #1B3760;
+    padding-bottom: 28px;
+    margin-bottom: 40px;
+  }
+  .breadcrumb {
+    font-size: 10px;
+    color: #08ABED;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 38px;
+    font-weight: 600;
+    color: #FFFFFF;
+    margin: 0 0 6px;
+    line-height: 1.2;
+  }
+  h1 em {
+    color: #08ABED;
+    font-style: italic;
+    font-weight: 600;
+  }
+  .subtitle {
+    font-size: 16px;
+    color: #8B9CB0;
+    margin: 0;
+    max-width: 900px;
+  }
+  .accent-rule {
+    width: 56px;
+    height: 4px;
+    background: #08ABED;
+    margin: 24px 0;
+  }
+  .top-nav {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #8B9CB0;
+    flex-wrap: wrap;
+  }
+  .top-nav a {
+    color: #08ABED;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+    transition: border-color 0.15s;
+  }
+  .top-nav a:hover { border-bottom-color: #08ABED; }
+  .top-nav .index-link {
+    color: #C4C9D1;
+    background: #1B3760;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border-bottom: none;
+  }
+  .top-nav .index-link:hover { background: #2A4D7A; border-bottom: none; }
+
+  /* Output section */
+  .output-section {
+    margin-bottom: 80px;
+    scroll-margin-top: 24px;
+  }
+  .output-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #08ABED;
+  }
+  .output-num {
+    font-size: 13px;
+    color: #08ABED;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .output-name {
+    font-size: 28px;
+    font-weight: 600;
+    color: #FFFFFF;
+  }
+  .gate-marker {
+    background: #FF5D2D;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .output-desc {
+    font-size: 14px;
+    color: #C4C9D1;
+    margin: 14px 0 28px;
+    max-width: 1000px;
+    line-height: 1.6;
+  }
+
+  /* Section labels — workshop, paint-back, deck */
+  .section-label {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 32px 0 14px;
+    padding-bottom: 6px;
+  }
+  .section-tag {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .tag-workshop { background: #166534; color: #BBF7D0; }
+  .tag-paintback { background: #4C1D6F; color: #E9D5FF; }
+  .tag-deck { background: #92400E; color: #FED7AA; }
+  .section-title {
+    font-size: 16px;
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+  .section-meta {
+    font-size: 12px;
+    color: #8B9CB0;
+  }
+  .section-meta strong { color: #C4C9D1; font-weight: 500; }
+
+  /* iframe wrapper for FigJam mockups */
+  .iframe-wrap {
+    background: #F5F5F0;
+    border: 1px solid #1B3760;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .iframe-wrap iframe {
+    width: 100%;
+    height: 720px;
+    border: 0;
+    display: block;
+  }
+  .iframe-overlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(1, 23, 47, 0.92);
+    color: #FFFFFF;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid #08ABED;
+    backdrop-filter: blur(4px);
+    transition: background 0.15s;
+  }
+  .iframe-overlay:hover { background: #08ABED; color: #01172F; }
+  .iframe-caption {
+    font-size: 11px;
+    color: #6B7280;
+    font-family: ui-monospace, monospace;
+    margin-bottom: 24px;
+  }
+
+  /* Slide strip — horizontal scroll */
+  .slide-strip-wrap {
+    background: #0A2447;
+    border: 1px solid #1B3760;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 8px;
+  }
+  .slide-strip {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    /* Scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #08ABED #1B3760;
+  }
+  .slide-strip::-webkit-scrollbar {
+    height: 8px;
+  }
+  .slide-strip::-webkit-scrollbar-track {
+    background: #1B3760;
+    border-radius: 4px;
+  }
+  .slide-strip::-webkit-scrollbar-thumb {
+    background: #08ABED;
+    border-radius: 4px;
+  }
+  .slide-tile {
+    flex-shrink: 0;
+    width: 380px;
+    border: 1px solid #1B3760;
+    border-radius: 4px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+    background: #061B36;
+  }
+  .slide-tile:hover {
+    border-color: #08ABED;
+    transform: translateY(-2px);
+  }
+  .slide-tile img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .slide-tile .slide-meta {
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #8B9CB0;
+    font-family: ui-monospace, monospace;
+    border-top: 1px solid #1B3760;
+    display: flex;
+    justify-content: space-between;
+  }
+  .slide-tile .slide-num {
+    color: #08ABED;
+    font-weight: 600;
+  }
+
+  /* Cross-ref */
+  .xref {
+    background: rgba(192, 132, 252, 0.08);
+    border-left: 2px solid #C084FC;
+    padding: 12px 16px;
+    margin: 24px 0 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: #C4A5E0;
+    line-height: 1.5;
+  }
+  .xref strong { color: #FFFFFF; font-weight: 600; }
+
+  /* Section divider — between outputs */
+  .phase-divider {
+    margin: 56px 0 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1B3760;
+  }
+  .phase-tag {
+    font-size: 11px;
+    color: #FF5D2D;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .phase-title {
+    font-size: 20px;
+    color: #FFFFFF;
+    font-weight: 600;
+    margin: 0;
+  }
+  .phase-desc {
+    font-size: 13px;
+    color: #8B9CB0;
+    margin: 6px 0 0;
+    max-width: 900px;
+  }
+
+  /* Top nav anchor pills */
+  .quicknav {
+    background: #061B36;
+    border: 1px solid #1B3760;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .quicknav-label {
+    font-size: 10px;
+    color: #08ABED;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+  .quicknav a {
+    font-size: 12px;
+    color: #C4C9D1;
+    background: #1B3760;
+    padding: 5px 11px;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .quicknav a:hover {
+    background: #08ABED;
+    color: #01172F;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 72px;
+    padding-top: 28px;
+    border-top: 1px solid #1B3760;
+    font-size: 12px;
+    color: #8B9CB0;
+  }
+  footer p { margin: 0 0 10px; max-width: 900px; }
+  footer strong { color: #FFFFFF; font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .slide-tile { width: 280px; }
+    .iframe-wrap iframe { height: 560px; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="breadcrumb">SiftFlow · Prepare stage · Strategist agent</div>
+    <h1>Visual gallery — <em>what every output looks like.</em></h1>
+    <div class="accent-rule"></div>
+    <p class="subtitle">Every FigJam workshop and paint-back mockup rendered inline, every PowerPoint slide rendered as an image. Five outputs drafted. Marlin Retail Group is the example customer threaded through everything.</p>
+  </header>
+
+  <!-- Quick nav to each output -->
+  <div class="quicknav">
+    <span class="quicknav-label">Jump to:</span>
+    <a href="#output-1">01 · Vision</a>
+    <a href="#output-2">02 · Value Map</a>
+    <a href="#output-3">03 · Current-State</a>
+    <a href="#output-4">04 · Stakeholder · Gate A</a>
+    <a href="#output-5">05 · Options · Gate B</a>
+  </div>
+
+  <!-- PHASE 1 DIVIDER -->
+  <div class="phase-divider">
+    <div class="phase-tag">Phase 1 · intermediaries</div>
+    <h2 class="phase-title">Outputs 1–4 · frame for Gate A</h2>
+    <p class="phase-desc">The agent builds the framing across the first four outputs. Sponsor approves the framing at Gate A before any options are generated.</p>
+  </div>
+
+  <!-- OUTPUT 1: VISION -->
+  <section class="output-section" id="output-1">
+    <div class="output-header">
+      <span class="output-num">Output 01</span>
+      <span class="output-name">Vision and Strategic Alignment</span>
+    </div>
+    <p class="output-desc">The intent, scope, sponsor, enterprise priorities. The agent's first cut at "what this programme is" — must trace to enterprise strategy. Sets the frame everything else lives inside.</p>
+
+    <!-- Workshop -->
+    <div class="section-label">
+      <span class="section-tag tag-workshop">Workshop</span>
+      <span class="section-title">Business Context</span>
+      <span class="section-meta">8 zones · captures intent, scope, priorities, sponsor</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-workshop-business-context.html" loading="lazy"></iframe>
+      <a href="mockup-workshop-business-context.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-workshop-business-context.html</div>
+
+    <!-- Paint-back -->
+    <div class="section-label">
+      <span class="section-tag tag-paintback">Paint-back</span>
+      <span class="section-title">Vision review canvas</span>
+      <span class="section-meta">Round-trip · mirrors deck exec summary; sponsors edit on canvas</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-paintback-vision.html" loading="lazy"></iframe>
+      <a href="mockup-paintback-vision.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-paintback-vision.html</div>
+
+    <!-- Deck -->
+    <div class="section-label">
+      <span class="section-tag tag-deck">Deck template</span>
+      <span class="section-title">Vision deck · 20 slides</span>
+      <span class="section-meta">Primary surface for Gate A executive summary</span>
+    </div>
+    <div class="slide-strip-wrap">
+      <div class="slide-strip">
+        <!-- Generated programmatically below -->
+                <a href="slides/vision-01.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-01.jpg" alt="Slide 1" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 01</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-02.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-02.jpg" alt="Slide 2" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 02</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-03.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-03.jpg" alt="Slide 3" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 03</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-04.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-04.jpg" alt="Slide 4" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 04</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-05.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-05.jpg" alt="Slide 5" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 05</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-06.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-06.jpg" alt="Slide 6" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 06</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-07.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-07.jpg" alt="Slide 7" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 07</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-08.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-08.jpg" alt="Slide 8" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 08</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-09.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-09.jpg" alt="Slide 9" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 09</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-10.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-10.jpg" alt="Slide 10" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 10</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-11.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-11.jpg" alt="Slide 11" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 11</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-12.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-12.jpg" alt="Slide 12" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 12</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-13.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-13.jpg" alt="Slide 13" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 13</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-14.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-14.jpg" alt="Slide 14" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 14</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-15.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-15.jpg" alt="Slide 15" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 15</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-16.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-16.jpg" alt="Slide 16" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 16</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-17.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-17.jpg" alt="Slide 17" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 17</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-18.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-18.jpg" alt="Slide 18" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 18</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-19.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-19.jpg" alt="Slide 19" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 19</span>
+            <span>vision</span>
+          </div>
+        </a>
+        <a href="slides/vision-20.jpg" target="_blank" class="slide-tile">
+          <img src="slides/vision-20.jpg" alt="Slide 20" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 20</span>
+            <span>vision</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="iframe-caption">strategist-vision-template.pptx · click any slide to open full size</div>
+  </section>
+
+  <!-- OUTPUT 2: VALUE MAP -->
+  <section class="output-section" id="output-2">
+    <div class="output-header">
+      <span class="output-num">Output 02</span>
+      <span class="output-name">Business Value Map and Success Metrics</span>
+    </div>
+    <p class="output-desc">Value chain (Porter 5+4 in customer vocabulary), value tree (objectives → drivers → metrics), value drops with benefit estimates as % of VD impact. Anchors the roadmap (8) by drop sequence and the ROM (9) by cost/benefit timing.</p>
+
+    <div class="section-label">
+      <span class="section-tag tag-workshop">Workshop</span>
+      <span class="section-title">Value Drivers + KPIs</span>
+      <span class="section-meta">10 zones · chain-naming, objectives, drivers, metrics, drops with benefit chips</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-workshop-value-drivers.html" loading="lazy"></iframe>
+      <a href="mockup-workshop-value-drivers.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-workshop-value-drivers.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-paintback">Paint-back</span>
+      <span class="section-title">Value Map review canvas</span>
+      <span class="section-meta">3 frames · chain+drops (read-mostly), value tree (round-trip), hypotheses</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-paintback-value-map.html" loading="lazy"></iframe>
+      <a href="mockup-paintback-value-map.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-paintback-value-map.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-deck">Deck template</span>
+      <span class="section-title">Value Map deck · 21 slides</span>
+      <span class="section-meta">Chain on slide 4 · drops with benefits on slide 5</span>
+    </div>
+    <div class="slide-strip-wrap">
+      <div class="slide-strip">
+                <a href="slides/value-map-01.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-01.jpg" alt="Slide 1" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 01</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-02.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-02.jpg" alt="Slide 2" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 02</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-03.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-03.jpg" alt="Slide 3" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 03</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-04.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-04.jpg" alt="Slide 4" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 04</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-05.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-05.jpg" alt="Slide 5" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 05</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-06.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-06.jpg" alt="Slide 6" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 06</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-07.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-07.jpg" alt="Slide 7" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 07</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-08.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-08.jpg" alt="Slide 8" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 08</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-09.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-09.jpg" alt="Slide 9" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 09</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-10.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-10.jpg" alt="Slide 10" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 10</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-11.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-11.jpg" alt="Slide 11" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 11</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-12.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-12.jpg" alt="Slide 12" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 12</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-13.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-13.jpg" alt="Slide 13" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 13</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-14.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-14.jpg" alt="Slide 14" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 14</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-15.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-15.jpg" alt="Slide 15" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 15</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-16.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-16.jpg" alt="Slide 16" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 16</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-17.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-17.jpg" alt="Slide 17" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 17</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-18.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-18.jpg" alt="Slide 18" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 18</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-19.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-19.jpg" alt="Slide 19" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 19</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-20.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-20.jpg" alt="Slide 20" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 20</span>
+            <span>value-map</span>
+          </div>
+        </a>
+        <a href="slides/value-map-21.jpg" target="_blank" class="slide-tile">
+          <img src="slides/value-map-21.jpg" alt="Slide 21" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 21</span>
+            <span>value-map</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="iframe-caption">strategist-value-map-template.pptx · click any slide to open full size</div>
+  </section>
+
+  <!-- OUTPUT 3: CURRENT-STATE -->
+  <section class="output-section" id="output-3">
+    <div class="output-header">
+      <span class="output-num">Output 03</span>
+      <span class="output-name">Current-State Capability Assessment</span>
+    </div>
+    <p class="output-desc">Capability coverage, maturity, process pain, system landscape, EOL signals. FigJam-primary — the canvas heat map is the canonical deliverable; the deck is a summary wrapper. Discipline: signal vs finding (no root-cause claims at Strategist stage).</p>
+
+    <div class="section-label">
+      <span class="section-tag tag-workshop">Workshop</span>
+      <span class="section-title">Current-State Landscape</span>
+      <span class="section-meta">Horizontal row alignment · capability lanes with maturity, pain, systems</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-workshop-current-state.html" loading="lazy"></iframe>
+      <a href="mockup-workshop-current-state.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-workshop-current-state.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-paintback">Paint-back</span>
+      <span class="section-title">Current-State capability heat map</span>
+      <span class="section-meta">Canvas IS the deliverable · capability heat map; deck is summary wrapper</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-paintback-current-state.html" loading="lazy"></iframe>
+      <a href="mockup-paintback-current-state.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-paintback-current-state.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-deck">Deck template</span>
+      <span class="section-title">Current-State deck · 15 slides</span>
+      <span class="section-meta">Summary wrapper for the FigJam canvas</span>
+    </div>
+    <div class="slide-strip-wrap">
+      <div class="slide-strip">
+                <a href="slides/current-state-01.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-01.jpg" alt="Slide 1" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 01</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-02.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-02.jpg" alt="Slide 2" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 02</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-03.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-03.jpg" alt="Slide 3" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 03</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-04.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-04.jpg" alt="Slide 4" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 04</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-05.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-05.jpg" alt="Slide 5" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 05</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-06.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-06.jpg" alt="Slide 6" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 06</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-07.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-07.jpg" alt="Slide 7" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 07</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-08.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-08.jpg" alt="Slide 8" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 08</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-09.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-09.jpg" alt="Slide 9" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 09</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-10.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-10.jpg" alt="Slide 10" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 10</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-11.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-11.jpg" alt="Slide 11" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 11</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-12.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-12.jpg" alt="Slide 12" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 12</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-13.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-13.jpg" alt="Slide 13" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 13</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-14.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-14.jpg" alt="Slide 14" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 14</span>
+            <span>current-state</span>
+          </div>
+        </a>
+        <a href="slides/current-state-15.jpg" target="_blank" class="slide-tile">
+          <img src="slides/current-state-15.jpg" alt="Slide 15" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 15</span>
+            <span>current-state</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="iframe-caption">strategist-current-state-template.pptx · click any slide to open full size</div>
+  </section>
+
+  <!-- OUTPUT 4: STAKEHOLDER -->
+  <section class="output-section" id="output-4">
+    <div class="output-header">
+      <span class="output-num">Output 04</span>
+      <span class="output-name">Stakeholder Map and Engagement Approach</span>
+      <span class="gate-marker">Gate A</span>
+    </div>
+    <p class="output-desc">Power-interest grid, RACI for load-bearing decisions, governance forums, communication plan. <strong style="color: #C084FC;">Political signals captured but never rendered</strong> — render functions hard-strip the field before producing any visible artefact. Visible redaction notice on every surface.</p>
+
+    <div class="section-label">
+      <span class="section-tag tag-workshop">Workshop</span>
+      <span class="section-title">Stakeholder Map</span>
+      <span class="section-meta">8 zones · power-interest grid, RACI, comms · plus facilitator-private political signals</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-workshop-stakeholder.html" loading="lazy"></iframe>
+      <a href="mockup-workshop-stakeholder.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-workshop-stakeholder.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-paintback">Paint-back</span>
+      <span class="section-title">Stakeholder review canvas</span>
+      <span class="section-meta">4 frames · grid+disposition, RACI, forums, comms · visible redaction notice</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-paintback-stakeholder.html" loading="lazy"></iframe>
+      <a href="mockup-paintback-stakeholder.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-paintback-stakeholder.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-deck">Deck template</span>
+      <span class="section-title">Stakeholder deck · 14 slides</span>
+      <span class="section-meta">Governance proposal · no placeholder for political_signals exists in template</span>
+    </div>
+    <div class="slide-strip-wrap">
+      <div class="slide-strip">
+                <a href="slides/stakeholder-01.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-01.jpg" alt="Slide 1" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 01</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-02.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-02.jpg" alt="Slide 2" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 02</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-03.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-03.jpg" alt="Slide 3" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 03</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-04.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-04.jpg" alt="Slide 4" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 04</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-05.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-05.jpg" alt="Slide 5" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 05</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-06.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-06.jpg" alt="Slide 6" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 06</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-07.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-07.jpg" alt="Slide 7" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 07</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-08.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-08.jpg" alt="Slide 8" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 08</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-09.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-09.jpg" alt="Slide 9" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 09</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-10.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-10.jpg" alt="Slide 10" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 10</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-11.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-11.jpg" alt="Slide 11" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 11</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-12.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-12.jpg" alt="Slide 12" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 12</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-13.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-13.jpg" alt="Slide 13" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 13</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+        <a href="slides/stakeholder-14.jpg" target="_blank" class="slide-tile">
+          <img src="slides/stakeholder-14.jpg" alt="Slide 14" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 14</span>
+            <span>stakeholder</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="iframe-caption">strategist-stakeholder-template.pptx · click any slide to open full size</div>
+
+    <div class="xref">
+      <strong>Gate A approval gate.</strong> After Output 4 is approved, the Constraints + Assumptions workshop runs to refresh the constraint set before option generation. That workshop feeds both Output 5 and Output 9.
+    </div>
+  </section>
+
+  <!-- PHASE 2 DIVIDER -->
+  <div class="phase-divider">
+    <div class="phase-tag">Phase 2 · pivot</div>
+    <h2 class="phase-title">Output 5 · Gate B sponsor selection</h2>
+    <p class="phase-desc">Strategic Options is the agent's pivot. Sponsor selects (doesn't review); selection drives the Phase 3 deliverables. Paint-back is one-way capture, not round-trip iteration.</p>
+  </div>
+
+  <!-- OUTPUT 5: OPTIONS -->
+  <section class="output-section" id="output-5">
+    <div class="output-header">
+      <span class="output-num">Output 05</span>
+      <span class="output-name">Strategic Options</span>
+      <span class="gate-marker">Gate B</span>
+    </div>
+    <p class="output-desc">2–3 genuinely distinct strategic paths from current to target state. Each option carries gains, gives_up, drop sequence, cost profile (ROM with mandatory Feasibility validation), and benefit profile (cumulative % of VD impact by horizon). <strong style="color: #FFB87A;">Sponsor selects, doesn't review</strong> — paint-back is one-way capture.</p>
+
+    <div class="section-label">
+      <span class="section-tag tag-workshop">Workshop</span>
+      <span class="section-title">Constraints + Assumptions</span>
+      <span class="section-meta">9 zones · budget, cost tolerance, deadlines, red lines, assumptions · feeds Output 5 and Output 9</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-workshop-constraints.html" loading="lazy"></iframe>
+      <a href="mockup-workshop-constraints.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-workshop-constraints.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-paintback">Paint-back</span>
+      <span class="section-title">Options selection canvas</span>
+      <span class="section-meta">Side-by-side comparison + selection panel · cost stripe + benefit stripe · one-way capture</span>
+    </div>
+    <div class="iframe-wrap">
+      <iframe src="mockup-paintback-options.html" loading="lazy"></iframe>
+      <a href="mockup-paintback-options.html" target="_blank" class="iframe-overlay">Open full view ↗</a>
+    </div>
+    <div class="iframe-caption">mockup-paintback-options.html</div>
+
+    <div class="section-label">
+      <span class="section-tag tag-deck">Deck template</span>
+      <span class="section-title">Options deck · 20 slides</span>
+      <span class="section-meta">Pre/post selection variants · cost/benefit profile per option on slide 10</span>
+    </div>
+    <div class="slide-strip-wrap">
+      <div class="slide-strip">
+                <a href="slides/options-01.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-01.jpg" alt="Slide 1" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 01</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-02.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-02.jpg" alt="Slide 2" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 02</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-03.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-03.jpg" alt="Slide 3" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 03</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-04.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-04.jpg" alt="Slide 4" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 04</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-05.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-05.jpg" alt="Slide 5" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 05</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-06.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-06.jpg" alt="Slide 6" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 06</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-07.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-07.jpg" alt="Slide 7" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 07</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-08.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-08.jpg" alt="Slide 8" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 08</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-09.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-09.jpg" alt="Slide 9" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 09</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-10.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-10.jpg" alt="Slide 10" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 10</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-11.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-11.jpg" alt="Slide 11" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 11</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-12.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-12.jpg" alt="Slide 12" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 12</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-13.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-13.jpg" alt="Slide 13" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 13</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-14.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-14.jpg" alt="Slide 14" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 14</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-15.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-15.jpg" alt="Slide 15" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 15</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-16.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-16.jpg" alt="Slide 16" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 16</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-17.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-17.jpg" alt="Slide 17" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 17</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-18.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-18.jpg" alt="Slide 18" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 18</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-19.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-19.jpg" alt="Slide 19" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 19</span>
+            <span>options</span>
+          </div>
+        </a>
+        <a href="slides/options-20.jpg" target="_blank" class="slide-tile">
+          <img src="slides/options-20.jpg" alt="Slide 20" loading="lazy">
+          <div class="slide-meta">
+            <span class="slide-num">Slide 20</span>
+            <span>options</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="iframe-caption">strategist-options-template.pptx · click any slide to open full size</div>
+
+    <div class="xref">
+      <strong>Phase 3 starts here.</strong> After the sponsor selects an option at Gate B, the strategist generates outputs 6–10 (Target Operating Model, Capability Map, Roadmap, ROM, Business Case) against the chosen option. Specs and templates for 6–10 are pending.
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>The FigJam mockups in this gallery are visual specifications, not FigJam files.</strong> Mladen builds the frame skeleton in FigJam by hand using these as the visual reference; the plugin handles pre-placement and extraction against that skeleton.</p>
+    <p><strong>Marlin Retail Group is the example customer threaded through every artefact.</strong> Fictional ANZ 4-brand homewares retailer, AU$420M revenue, CEO sponsor (Sarah Park), AU$14M programme ceiling, FY27 deadline.</p>
+    <p>Generated 18 May 2026 · 5 outputs · 10 FigJam mockups · 90 PowerPoint slides across 5 deck templates.</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

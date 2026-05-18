@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — paint-back/strategist/vision/v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1400px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .canvas {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+  .vision-frame {
+    background: #FFFFFF;
+    margin: 32px;
+    padding: 32px;
+    border: 2px dashed #8B9CB0;
+    border-radius: 4px;
+    position: relative;
+  }
+  .frame-tag {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .vision-header {
+    text-align: center;
+    border-bottom: 1px solid #E0E0DC;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .vision-customer { font-size: 12px; color: #6B6B6B; letter-spacing: 0.04em; }
+  .vision-title { font-size: 20px; font-weight: 500; margin: 4px 0; }
+  .vision-date { font-size: 11px; color: #8B8B8B; }
+  .vision-intent {
+    background: #FFF8E1;
+    border-left: 4px solid #F0AD4E;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .intent-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #8B6914;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .col-block {
+    background: #F8F9FA;
+    padding: 16px;
+    border-radius: 4px;
+    border-top: 3px solid #08ABED;
+  }
+  .col-block.scope-out { border-top-color: #FF5D2D; }
+  .col-block.context { border-top-color: #08ABED; }
+  .col-block.scope-in { border-top-color: #51CF66; }
+  .col-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4A4A4A;
+    margin-bottom: 8px;
+  }
+  .col-list { font-size: 12px; line-height: 1.6; }
+  .col-list .item { padding: 2px 0; }
+  .priorities-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .priority-tile {
+    background: #E7F5FF;
+    padding: 12px 14px;
+    border-radius: 4px;
+    border-left: 3px solid #1971C2;
+  }
+  .priority-tile .num {
+    font-size: 10px;
+    color: #1971C2;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .priority-tile .stmt {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .priority-tile .align {
+    font-size: 11px;
+    color: #495057;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .success-signal {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #E0E0DC;
+    border-bottom: 1px solid #E0E0DC;
+    margin-bottom: 16px;
+    font-size: 15px;
+    font-style: italic;
+    color: #1971C2;
+  }
+  .vision-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #6B6B6B;
+    padding-top: 8px;
+  }
+  .comments-zone {
+    background: #FAFAF5;
+    margin: 0 32px 32px;
+    padding: 24px;
+    border: 1px dashed #D0D0CA;
+    border-radius: 4px;
+  }
+  .comments-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4A4A4A;
+    margin-bottom: 14px;
+  }
+  .comment-stickies {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .comment-sticky {
+    width: 160px;
+    padding: 10px 12px;
+    background: #FFF9C4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    font-size: 11px;
+    line-height: 1.4;
+    transform: rotate(-1deg);
+    border-radius: 2px;
+  }
+  .comment-sticky:nth-child(2n) { transform: rotate(1deg); background: #F8BBD0; }
+  .comment-sticky:nth-child(3n) { transform: rotate(-0.5deg); background: #BBDEFB; }
+  .comment-sticky .author {
+    font-size: 9px;
+    color: #6B6B6B;
+    margin-top: 6px;
+    border-top: 1px dotted rgba(0,0,0,0.15);
+    padding-top: 4px;
+  }
+  .legend {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .legend-item { max-width: 240px; }
+  .legend-item-title { font-weight: 500; margin-bottom: 4px; font-size: 12px; }
+  .legend-item-desc { font-size: 11px; color: #6B6B6B; line-height: 1.5; }
+  .footnote {
+    max-width: 1400px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: #6B6B6B;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Vision paint-back</h1>
+  <div class="meta">
+    <span class="code">paint-back/strategist/vision/v1</span>
+    · Renders Strategist Output 1 to canvas for sponsor review
+    · Spec: <span class="code">figjam-output-rendering-spec.md §3</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Vision review · 22 Apr 2026</div>
+    <div class="right">v2 · Painted from blackboard</div>
+  </div>
+
+  <div class="vision-frame">
+    <div class="frame-tag">PAINTED FROM SCHEMA · READ-MOSTLY</div>
+
+    <div class="vision-header">
+      <div class="vision-customer">MARLIN RETAIL GROUP</div>
+      <div class="vision-title">Program Vision &amp; Strategic Alignment</div>
+      <div class="vision-date">22 April 2026 · v2</div>
+    </div>
+
+    <div class="vision-intent">
+      <div class="intent-label">Programme intent</div>
+      Marlin's digital commerce footprint is the residue of acquisition, not strategy.
+      The board's mandate is to consolidate before vendor end-of-life forces a rushed
+      migration on the worst possible terms. The opportunity is to standardise the 80%
+      of commerce mechanics that are common across the four brands — checkout, payments,
+      fulfilment, product catalogue, customer identity — while preserving the
+      brand-specific 20% the brand teams correctly defend.
+    </div>
+
+    <div class="three-col">
+      <div class="col-block context">
+        <div class="col-label">Why now</div>
+        <div class="col-list">
+          Vendor X end-of-life in 18 months; board mandate to consolidate before FY27;
+          new CEO 90-day plan requires a credible commerce story.
+        </div>
+      </div>
+      <div class="col-block scope-in">
+        <div class="col-label">In scope</div>
+        <div class="col-list">
+          <div class="item">· Commerce experience</div>
+          <div class="item">· Customer identity</div>
+          <div class="item">· Catalogue management</div>
+          <div class="item">· Checkout &amp; payments</div>
+        </div>
+      </div>
+      <div class="col-block scope-out">
+        <div class="col-label">Out of scope</div>
+        <div class="col-list">
+          <div class="item">· Store POS systems</div>
+          <div class="item">· Supply chain &amp; logistics</div>
+          <div class="item">· Brand merchandising autonomy</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="priorities-row">
+      <div class="priority-tile">
+        <div class="num">PRIORITY 1</div>
+        <div class="stmt">Reduce operating cost by FY28</div>
+        <div class="align">Consolidation removes the run-cost duplication of four parallel commerce stacks.</div>
+      </div>
+      <div class="priority-tile">
+        <div class="num">PRIORITY 2</div>
+        <div class="stmt">Lift cross-brand customer value</div>
+        <div class="align">Shared identity unlocks cross-brand purchase patterns hidden by today's four-stack split.</div>
+      </div>
+      <div class="priority-tile">
+        <div class="num">PRIORITY 3</div>
+        <div class="stmt">Modernise digital commerce</div>
+        <div class="align">Replatform on Commerce Cloud before vendor EOL forces a rushed migration.</div>
+      </div>
+    </div>
+
+    <div class="success-signal">
+      Marlin runs one platform behind four brand experiences within 18 months —
+      with measurable run-cost reduction, lifted cross-brand purchase rate, and
+      checkout standardisation across all brands.
+    </div>
+
+    <div class="vision-footer">
+      <div>Sponsor: Sarah Park · CEO</div>
+      <div>Schema: /blackboard/strategist/vision/v2.md</div>
+    </div>
+  </div>
+
+  <div class="comments-zone">
+    <div class="comments-label">Sponsor comments · review-mode markup</div>
+    <div class="comment-stickies">
+      <div class="comment-sticky">
+        Tighten "the 80%" — say which mechanics by name?
+        <div class="author">— S. Park</div>
+      </div>
+      <div class="comment-sticky">
+        Add Tasmanian regulatory carve-out to scope_out?
+        <div class="author">— D. Patel, COO</div>
+      </div>
+      <div class="comment-sticky">
+        Priority 2 — is 9% the right target? Looks low.
+        <div class="author">— S. Park</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <div class="legend-title">Paint-back conventions</div>
+  <div class="legend-row">
+    <div class="legend-item">
+      <div class="legend-item-title">Read-mostly</div>
+      <div class="legend-item-desc">The painted frame mirrors slide 2 of the Vision deck. Sponsors don't edit the frame directly — they mark it up with comment stickies in the dedicated comments zone below.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Round-trip via comments</div>
+      <div class="legend-item-desc">The plugin extracts comment stickies from the comments zone and passes them to the agent. The agent decides whether to revise (v2) or respond. Comment stickies don't mutate the schema directly.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Theming via design.md</div>
+      <div class="legend-item-desc">Colours, customer name, sponsor footer pull from the engagement's design.md. The frame structure is constant; the styling varies per customer.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Versioning</div>
+      <div class="legend-item-desc">Each paint-back is tagged with the schema version it was rendered from. When the agent publishes v3, the previous paint-back frame is archived and a new one is painted.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footnote">
+  This is a visual reference for the FigJam paint-back frame Mladen builds in FigJam. Content is illustrative — populated with Marlin Retail Group example. Field bindings to the canonical Vision schema are in <span style="font-family: ui-monospace, monospace;">figjam-output-rendering-spec.md §3</span>.
+</div>
+
+</body>
+</html>

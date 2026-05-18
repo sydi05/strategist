@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — paint-back/strategist/stakeholder/v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1500px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .canvas {
+    max-width: 1500px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+
+  .painted-frame {
+    background: #FFFFFF;
+    margin: 24px 32px;
+    padding: 24px;
+    border: 2px dashed #8B9CB0;
+    border-radius: 4px;
+    position: relative;
+  }
+  .frame-tag {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .frame-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .frame-subtitle { font-size: 12px; color: #6B6B6B; margin-bottom: 18px; }
+
+  /* Power-interest grid */
+  .grid-container {
+    display: grid;
+    grid-template-columns: 60px 1fr 1fr;
+    grid-template-rows: 30px 1fr 1fr;
+    gap: 6px;
+    min-height: 360px;
+  }
+  .grid-corner { background: transparent; }
+  .grid-x-label, .grid-y-label {
+    background: transparent;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .grid-y-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 4px 0;
+  }
+  .quadrant {
+    background: #F8F9FA;
+    border: 1px solid #E0E0DC;
+    border-radius: 4px;
+    padding: 14px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .quadrant-label {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 9px;
+    color: #8B8B8B;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .quadrant.manage-closely { background: #FEF2F2; }
+  .quadrant.keep-satisfied { background: #FEF3C7; }
+  .quadrant.keep-informed { background: #ECFDF5; }
+  .quadrant.monitor { background: #F8F9FA; }
+  .stakeholder-tile {
+    background: #FFFFFF;
+    border: 1px solid #E0E0DC;
+    border-left: 3px solid #6B7280;
+    padding: 6px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .stakeholder-tile .role {
+    font-size: 9px;
+    color: #6B6B6B;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .stakeholder-tile.champion { border-left-color: #166534; }
+  .stakeholder-tile.supportive { border-left-color: #1971C2; }
+  .stakeholder-tile.neutral { border-left-color: #92400E; }
+  .stakeholder-tile.sceptical { border-left-color: #991B1B; }
+  .stakeholder-tile .disposition-badge {
+    display: inline-block;
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-champion { background: #BBF7D0; color: #166534; }
+  .badge-supportive { background: #DBEAFE; color: #1E40AF; }
+  .badge-neutral { background: #FED7AA; color: #92400E; }
+  .badge-sceptical { background: #FECACA; color: #991B1B; }
+
+  /* RACI matrix */
+  .raci-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .raci-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #D0D0CA;
+    background: #F8F9FA;
+  }
+  .raci-table th.center { text-align: center; width: 70px; }
+  .raci-table td {
+    padding: 10px;
+    border-bottom: 1px solid #F0F0EC;
+    vertical-align: top;
+  }
+  .raci-table td.center { text-align: center; font-weight: 600; }
+  .raci-table .decision-name { font-weight: 600; }
+  .raci-table .when { font-size: 10px; color: #6B6B6B; margin-top: 2px; }
+  .raci-A { background: #FED7AA; color: #7C2D12; }
+  .raci-R { background: #DBEAFE; color: #1E40AF; }
+  .raci-C { background: #E0E7FF; color: #3730A3; }
+  .raci-I { background: #F3F4F6; color: #4B5563; }
+  .raci-cell {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+  }
+
+  /* Governance forums */
+  .forum-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .forum-card {
+    background: #F8F9FA;
+    border: 1px solid #E0E0DC;
+    border-left: 3px solid #08ABED;
+    border-radius: 3px;
+    padding: 12px;
+    font-size: 11px;
+  }
+  .forum-card .name { font-weight: 600; margin-bottom: 4px; }
+  .forum-card .meta-row {
+    font-size: 10px;
+    color: #6B6B6B;
+    margin-bottom: 6px;
+  }
+  .forum-card .decides {
+    font-size: 11px;
+    color: #4A4A4A;
+    line-height: 1.4;
+  }
+
+  /* Comms plan */
+  .comms-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .comms-card {
+    background: #ECFDF5;
+    border: 1px solid #BBF7D0;
+    border-left: 3px solid #166534;
+    padding: 10px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .comms-card .cohort { font-weight: 600; margin-bottom: 4px; }
+  .comms-card .cadence-pill {
+    display: inline-block;
+    background: #166534;
+    color: #FFFFFF;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .comms-card .channel { font-size: 10px; color: #4A4A4A; }
+
+  /* THE REDACTION NOTICE — visible, not hidden */
+  .redaction-notice {
+    background: #F3F4F6;
+    border: 1px dashed #9CA3AF;
+    border-radius: 4px;
+    margin: 0 32px 24px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .redaction-icon {
+    background: #1F2937;
+    color: #FFFFFF;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .redaction-text {
+    font-size: 11px;
+    color: #4B5563;
+    line-height: 1.5;
+  }
+  .redaction-text strong { color: #1F2937; font-weight: 600; }
+  .redaction-text code {
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+    background: #E5E7EB;
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+
+  /* Comments zone */
+  .comments-zone {
+    background: #FAFAF5;
+    margin: 0 32px 32px;
+    padding: 24px;
+    border: 1px dashed #D0D0CA;
+    border-radius: 4px;
+  }
+  .comments-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4A4A4A;
+    margin-bottom: 14px;
+  }
+  .comment-stickies { display: flex; gap: 12px; flex-wrap: wrap; }
+  .comment-sticky {
+    width: 180px;
+    padding: 10px 12px;
+    background: #FFF9C4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    font-size: 11px;
+    line-height: 1.4;
+    transform: rotate(-1deg);
+    border-radius: 2px;
+  }
+  .comment-sticky:nth-child(2n) { transform: rotate(1deg); background: #F8BBD0; }
+  .comment-sticky:nth-child(3n) { transform: rotate(-0.5deg); background: #BBDEFB; }
+  .comment-sticky .author {
+    font-size: 9px;
+    color: #6B6B6B;
+    margin-top: 6px;
+    border-top: 1px dotted rgba(0,0,0,0.15);
+    padding-top: 4px;
+  }
+
+  .key-pattern {
+    max-width: 1500px;
+    margin: 16px auto 0;
+    padding: 16px 20px;
+    background: #FFF9E6;
+    border: 1px solid #F0AD4E;
+    border-left: 4px solid #F0AD4E;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .key-pattern strong { font-weight: 600; }
+
+  .legend {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .legend-item { max-width: 280px; }
+  .legend-item-title { font-weight: 500; margin-bottom: 4px; font-size: 12px; }
+  .legend-item-desc { font-size: 11px; color: #6B6B6B; line-height: 1.5; }
+
+  .footnote {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: #6B6B6B;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Stakeholder paint-back</h1>
+  <div class="meta">
+    <span class="code">paint-back/strategist/stakeholder/v1</span>
+    · Renders Strategist Output 4 to canvas for sponsor review
+    · Spec: <span class="code">figjam-output-rendering-spec.md §6</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Stakeholder Map review · 5 May 2026</div>
+    <div class="right">v1 · Painted from blackboard · political_signals stripped at render</div>
+  </div>
+
+  <!-- POWER-INTEREST GRID FRAME -->
+  <div class="painted-frame">
+    <div class="frame-tag">POWER × INTEREST · WITH DISPOSITIONS</div>
+    <div class="frame-title">Stakeholder positioning</div>
+    <div class="frame-subtitle">Power-interest position determines engagement approach · disposition determines what's needed</div>
+
+    <div class="grid-container">
+      <div class="grid-corner"></div>
+      <div class="grid-x-label">Low interest</div>
+      <div class="grid-x-label">High interest</div>
+
+      <div class="grid-y-label">High power</div>
+      <div class="quadrant keep-satisfied">
+        <div class="quadrant-label">Keep satisfied</div>
+        <div class="stakeholder-tile supportive">
+          David Patel
+          <div class="role">COO</div>
+          <span class="disposition-badge badge-supportive">Supportive</span>
+        </div>
+        <div class="stakeholder-tile neutral">
+          James Wright
+          <div class="role">CFO</div>
+          <span class="disposition-badge badge-neutral">Neutral</span>
+        </div>
+      </div>
+      <div class="quadrant manage-closely">
+        <div class="quadrant-label">Manage closely</div>
+        <div class="stakeholder-tile champion">
+          Sarah Park
+          <div class="role">CEO · Sponsor</div>
+          <span class="disposition-badge badge-champion">Champion</span>
+        </div>
+        <div class="stakeholder-tile supportive">
+          Linda Cho
+          <div class="role">CMO</div>
+          <span class="disposition-badge badge-supportive">Supportive</span>
+        </div>
+        <div class="stakeholder-tile sceptical">
+          Marcus Eng
+          <div class="role">Brand 4 MD</div>
+          <span class="disposition-badge badge-sceptical">Sceptical</span>
+        </div>
+      </div>
+
+      <div class="grid-y-label">Low power</div>
+      <div class="quadrant monitor">
+        <div class="quadrant-label">Monitor</div>
+        <div class="stakeholder-tile neutral">
+          External tax advisor
+          <div class="role">PwC</div>
+        </div>
+      </div>
+      <div class="quadrant keep-informed">
+        <div class="quadrant-label">Keep informed</div>
+        <div class="stakeholder-tile supportive">
+          Maya Rao
+          <div class="role">Head of Digital</div>
+          <span class="disposition-badge badge-supportive">Supportive</span>
+        </div>
+        <div class="stakeholder-tile supportive">
+          Sam Kim
+          <div class="role">Brand 2 marketing</div>
+          <span class="disposition-badge badge-supportive">Supportive</span>
+        </div>
+        <div class="stakeholder-tile neutral">
+          Sienna Lee
+          <div class="role">CS ops lead</div>
+          <span class="disposition-badge badge-neutral">Neutral</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RACI FRAME -->
+  <div class="painted-frame">
+    <div class="frame-tag">RACI · LOAD-BEARING DECISIONS ONLY</div>
+    <div class="frame-title">Decision authority</div>
+    <div class="frame-subtitle">Three load-bearing decisions in this programme — one Accountable per decision</div>
+
+    <table class="raci-table">
+      <thead>
+        <tr>
+          <th style="width: 30%;">Decision</th>
+          <th>Accountable</th>
+          <th>Responsible</th>
+          <th>Consulted</th>
+          <th>Informed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="decision-name">Approve framing (Gate A)</div>
+            <div class="when">End May 2026</div>
+          </td>
+          <td><span class="raci-cell raci-A">A</span> CEO</td>
+          <td><span class="raci-cell raci-R">R</span> Strategist + lead BSA</td>
+          <td><span class="raci-cell raci-C">C</span> COO, CFO, CMO</td>
+          <td><span class="raci-cell raci-I">I</span> Steering committee</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="decision-name">Select strategic option (Gate B)</div>
+            <div class="when">Mid June 2026</div>
+          </td>
+          <td><span class="raci-cell raci-A">A</span> CEO</td>
+          <td><span class="raci-cell raci-R">R</span> Strategist</td>
+          <td><span class="raci-cell raci-C">C</span> COO, CFO, CMO, Brand MDs</td>
+          <td><span class="raci-cell raci-I">I</span> Board</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="decision-name">Approve business case</div>
+            <div class="when">End July 2026</div>
+          </td>
+          <td><span class="raci-cell raci-A">A</span> Board</td>
+          <td><span class="raci-cell raci-R">R</span> CEO + CFO</td>
+          <td><span class="raci-cell raci-C">C</span> Strategist, COO</td>
+          <td><span class="raci-cell raci-I">I</span> Senior leadership</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- GOVERNANCE FORUMS FRAME -->
+  <div class="painted-frame">
+    <div class="frame-tag">GOVERNANCE FORUMS</div>
+    <div class="frame-title">Where decisions happen</div>
+    <div class="frame-subtitle">Existing forums preferred · each forum's "decides" field is verbatim</div>
+
+    <div class="forum-grid">
+      <div class="forum-card">
+        <div class="name">Programme Steering Committee</div>
+        <div class="meta-row">Fortnightly · quorum 3 of 4</div>
+        <div class="decides">Scope changes, risk acceptance, gate approvals</div>
+      </div>
+      <div class="forum-card">
+        <div class="name">Architecture Review Board</div>
+        <div class="meta-row">Monthly · quorum 4 of 6</div>
+        <div class="decides">Technical direction, integration patterns, deviations</div>
+      </div>
+      <div class="forum-card">
+        <div class="name">Brand Council</div>
+        <div class="meta-row">Monthly · all 4 brands</div>
+        <div class="decides">Brand-specific carve-outs, customer experience trade-offs</div>
+      </div>
+      <div class="forum-card">
+        <div class="name">Sponsor 1:1</div>
+        <div class="meta-row">Weekly · 1:1</div>
+        <div class="decides">Direction, escalations, sponsor alignment</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMS PLAN FRAME -->
+  <div class="painted-frame">
+    <div class="frame-tag">COMMUNICATION PLAN</div>
+    <div class="frame-title">How each cohort stays informed</div>
+    <div class="frame-subtitle">Cadence · channel · success signal per cohort</div>
+
+    <div class="comms-grid">
+      <div class="comms-card">
+        <div class="cohort">Brand teams (all 4)</div>
+        <span class="cadence-pill">FORTNIGHTLY</span>
+        <div class="channel">Brand Council readout + Slack · success: each brand articulates intent in own words</div>
+      </div>
+      <div class="comms-card">
+        <div class="cohort">Commerce ops (42 FTE)</div>
+        <span class="cadence-pill">MONTHLY</span>
+        <div class="channel">Town hall + manager cascade · success: no FTE learns of role changes from rumour</div>
+      </div>
+      <div class="comms-card">
+        <div class="cohort">Customer service ops</div>
+        <span class="cadence-pill">MONTHLY</span>
+        <div class="channel">CS lead briefing · success: agents can answer cross-brand questions before cutover</div>
+      </div>
+      <div class="comms-card">
+        <div class="cohort">Board</div>
+        <span class="cadence-pill">GATE-DRIVEN</span>
+        <div class="channel">Formal paper · success: board approves without re-litigation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REDACTION NOTICE — explicitly visible -->
+  <div class="redaction-notice">
+    <div class="redaction-icon">🔒</div>
+    <div class="redaction-text">
+      <strong>Political signals are not rendered on this surface.</strong>
+      They are captured separately in <code>framing_notes.political_signals</code> on the blackboard, where they inform engagement-planning logic. The render function strips this field before producing any visible artefact — no exception. Politics shapes engagement; politics does not render.
+    </div>
+  </div>
+
+  <!-- COMMENTS ZONE -->
+  <div class="comments-zone">
+    <div class="comments-label">Sponsor comments · review-mode markup</div>
+    <div class="comment-stickies">
+      <div class="comment-sticky">
+        Should Brand 4 MD escalate to a separate disposition track? He'll be the loudest voice.
+        <div class="author">— S. Park, CEO</div>
+      </div>
+      <div class="comment-sticky">
+        Board cadence — fortnightly preferable post-Gate B, not just gate-driven.
+        <div class="author">— S. Park</div>
+      </div>
+      <div class="comment-sticky">
+        Add IT Risk Committee to governance forums?
+        <div class="author">— D. Patel, COO</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="key-pattern">
+  <strong>Why the redaction notice is visible, not hidden.</strong>
+  An invisible strip looks like an omission. A visible notice says "this is deliberate, this is the discipline, this is what protects you." Sponsors learn quickly that the Strategist captures the political subtext on the blackboard for its own engagement planning but never lets it leak into rendered artefacts. The trust is built by showing the discipline, not by hiding the fact that something has been removed.
+</div>
+
+<div class="legend">
+  <div class="legend-title">Paint-back conventions</div>
+  <div class="legend-row">
+    <div class="legend-item">
+      <div class="legend-item-title">Four connected frames</div>
+      <div class="legend-item-desc">Power-interest grid · RACI matrix · governance forums · communication plan. Each renders as a separate frame on the same canvas section. Stakeholders appear once in the grid; their disposition shows as a coloured left-stripe on the tile.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Disposition layered on grid</div>
+      <div class="legend-item-desc">Power-interest position determines engagement approach (manage closely / keep satisfied / etc.). Disposition (champion / supportive / neutral / sceptical) determines what each stakeholder needs to actively support the programme. Both are visible on the same tile.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">RACI for load-bearing decisions only</div>
+      <div class="legend-item-desc">The matrix shows the programme-defining decisions (Gate A, Gate B, business case approval) — not standing org RACI. One Accountable per decision; multiple As means the framing is wrong and gets flagged.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Political signals are absent — and the absence is visible</div>
+      <div class="legend-item-desc">The redaction notice is rendered, not hidden. Sponsors see the discipline working. Captured content lives in <code>framing_notes.political_signals</code> on the blackboard; the render function strips it. Verified at render time, not by convention.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footnote">
+  Visual reference for the FigJam paint-back frame Mladen builds in FigJam. Content is illustrative (Marlin Retail Group, fictional stakeholders). Schema field bindings and the render-time political-signal strip are in <span style="font-family: ui-monospace, monospace;">figjam-output-rendering-spec.md §6</span>.
+</div>
+
+</body>
+</html>

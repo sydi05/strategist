@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FigJam mockup — paint-back/strategist/options/v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F5F5F0;
+    color: #1A1A1A;
+  }
+  .header-bar {
+    max-width: 1500px;
+    margin: 0 auto 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .header-bar h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .header-bar .meta { font-size: 13px; color: #6B6B6B; }
+  .header-bar .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; background: #E8E8E0; padding: 2px 6px; border-radius: 3px; }
+  .header-bar .one-way-badge {
+    display: inline-block;
+    background: #08ABED;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+  .canvas {
+    max-width: 1500px;
+    margin: 0 auto;
+    background: #FAFAF5;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D0CA;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .canvas-header .left { font-weight: 500; }
+  .canvas-header .right { color: #6B6B6B; }
+
+  /* Two-frame canvas layout: comparison frame + selection panel */
+  .canvas-body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    min-height: 700px;
+  }
+
+  /* Comparison frame (left) */
+  .comparison-frame {
+    background: #FFFFFF;
+    padding: 24px;
+    border-right: 1px dashed #D0D0CA;
+  }
+  .frame-tag {
+    display: inline-block;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .frame-tag.primary { background: #08ABED; }
+  .frame-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .frame-subtitle { font-size: 12px; color: #6B6B6B; margin-bottom: 20px; }
+
+  /* Three-column option layout — horizontal baselines aligned */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 130px 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .row-label {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: #6B6B6B;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 8px 0;
+    align-self: center;
+  }
+  .option-cell {
+    padding: 10px 12px;
+    background: #F8F9FA;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1.45;
+    align-self: stretch;
+  }
+  .option-cell.header {
+    background: #FFFFFF;
+    border-left: 4px solid #08ABED;
+    padding-top: 12px;
+  }
+  .option-cell.header .opt-id { font-size: 9px; color: #08ABED; font-weight: 600; letter-spacing: 0.06em; }
+  .option-cell.header .opt-name { font-size: 14px; font-weight: 600; margin: 2px 0 4px; color: #032D60; }
+  .option-cell.header .opt-desc { font-size: 10px; color: #4A4A4A; }
+  .option-cell.target-state { background: #ECFDF5; border-left: 3px solid #166534; padding-left: 10px; }
+  .option-cell.gains {
+    background: #F0FDF4;
+    border-left: 3px solid #166534;
+    padding-left: 10px;
+  }
+  .option-cell.gains .callout {
+    background: #BBF7D0;
+    color: #166534;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .option-cell.gives-up {
+    background: #FFF7ED;
+    border-left: 3px solid #C2410C;
+    padding-left: 10px;
+  }
+  .option-cell.gives-up .callout {
+    background: #FED7AA;
+    color: #C2410C;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .option-cell ul {
+    margin: 0;
+    padding-left: 14px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .option-cell .horizon-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #032D60;
+  }
+  .option-cell .confidence {
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .conf-medium { color: #C2410C; }
+  .conf-high { color: #166534; }
+  .conf-low { color: #991B1B; }
+  .driver-chip {
+    display: inline-block;
+    background: #DBEAFE;
+    color: #1E40AF;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin: 2px 3px 2px 0;
+    font-size: 9px;
+    font-family: ui-monospace, monospace;
+    font-weight: 600;
+  }
+
+  /* Cost / benefit cells */
+  .option-cell.cost-cell {
+    background: #FAF5FF;
+    border-left: 3px solid #7E22CE;
+    padding-left: 10px;
+  }
+  .option-cell.cost-cell .cost-figure {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4C1D6F;
+    margin-bottom: 2px;
+  }
+  .option-cell.cost-cell .cost-run {
+    font-size: 10px;
+    color: #6B6B6B;
+    margin-bottom: 6px;
+  }
+  .option-cell.cost-cell .feasibility-pill {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .feasibility-pill.validated { background: #BBF7D0; color: #166534; }
+  .feasibility-pill.flagged { background: #FED7AA; color: #92400E; }
+  .feasibility-pill.rejected { background: #FECACA; color: #991B1B; }
+
+  .option-cell.benefit-cell {
+    background: #ECFDF5;
+    border-left: 3px solid #166534;
+    padding-left: 10px;
+    font-size: 10px;
+  }
+  .option-cell.benefit-cell .benefit-row {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 6px;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .option-cell.benefit-cell .hor {
+    font-weight: 600;
+    color: #166534;
+    font-family: ui-monospace, monospace;
+    font-size: 9px;
+  }
+  .option-cell.benefit-cell .val {
+    color: #1F2937;
+    font-size: 9px;
+  }
+
+  /* Selection panel (right) */
+  .selection-panel {
+    background: #F0F9FF;
+    padding: 24px;
+    border-left: 4px solid #08ABED;
+  }
+  .selection-panel h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #075985;
+  }
+  .selection-panel .selection-question {
+    font-size: 12px;
+    color: #4A4A4A;
+    font-style: italic;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .selection-radio {
+    background: #FFFFFF;
+    border: 1px solid #BAE6FD;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    cursor: pointer;
+    position: relative;
+  }
+  .selection-radio.selected {
+    background: #08ABED;
+    color: #FFFFFF;
+    border-color: #08ABED;
+  }
+  .radio-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #94A3B8;
+    flex-shrink: 0;
+  }
+  .selection-radio.selected .radio-dot {
+    border-color: #FFFFFF;
+    background: #FFFFFF;
+    position: relative;
+  }
+  .selection-radio.selected .radio-dot::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: #08ABED;
+    border-radius: 50%;
+  }
+  .radio-content {
+    flex: 1;
+  }
+  .radio-content .id { font-size: 9px; font-weight: 600; letter-spacing: 0.06em; opacity: 0.8; }
+  .radio-content .name { font-weight: 600; }
+
+  .conditions-zone {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #BAE6FD;
+  }
+  .conditions-zone h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #075985;
+    margin: 0 0 4px;
+  }
+  .conditions-zone .field-hint {
+    font-size: 11px;
+    color: #4A4A4A;
+    font-style: italic;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .condition-sticky {
+    background: #FFE066;
+    padding: 8px 10px;
+    border-radius: 2px;
+    font-size: 10px;
+    line-height: 1.4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    margin-bottom: 6px;
+    transform: rotate(-0.5deg);
+  }
+  .condition-sticky:nth-child(odd) { transform: rotate(0.5deg); }
+
+  .rationale-zone {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #BAE6FD;
+  }
+  .rationale-zone h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #075985;
+    margin: 0 0 4px;
+  }
+  .rationale-sticky {
+    background: #FED7AA;
+    padding: 10px 12px;
+    border-radius: 2px;
+    font-size: 11px;
+    line-height: 1.4;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+    margin-top: 8px;
+    font-style: italic;
+    color: #7C2D12;
+  }
+  .rationale-sticky .author {
+    font-size: 9px;
+    color: #92400E;
+    margin-top: 4px;
+    border-top: 1px dotted rgba(0,0,0,0.15);
+    padding-top: 3px;
+    font-style: normal;
+  }
+
+  .lock-notice {
+    background: #FFFFFF;
+    border: 1px solid #BAE6FD;
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 24px;
+    font-size: 10px;
+    color: #4A4A4A;
+    line-height: 1.5;
+    display: flex;
+    gap: 10px;
+  }
+  .lock-notice .icon {
+    background: #075985;
+    color: #FFFFFF;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .lock-notice strong { color: #1A1A1A; font-weight: 600; }
+
+  .key-pattern {
+    max-width: 1500px;
+    margin: 16px auto 0;
+    padding: 16px 20px;
+    background: #FFF9E6;
+    border: 1px solid #F0AD4E;
+    border-left: 4px solid #F0AD4E;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .key-pattern strong { font-weight: 600; }
+
+  .legend {
+    max-width: 1500px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #D0D0CA;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .legend-title { font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+  .legend-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .legend-item { max-width: 280px; }
+  .legend-item-title { font-weight: 500; margin-bottom: 4px; font-size: 12px; }
+  .legend-item-desc { font-size: 11px; color: #6B6B6B; line-height: 1.5; }
+  .footnote { max-width: 1500px; margin: 24px auto 0; font-size: 12px; color: #6B6B6B; font-style: italic; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>FigJam frame template — Options paint-back <span class="one-way-badge">ONE-WAY · SELECTION ONLY</span></h1>
+  <div class="meta">
+    <span class="code">paint-back/strategist/options/v1</span>
+    · Sponsor selects on canvas; selection flows to schema · NOT round-trip iteration
+    · Spec: <span class="code">figjam-output-rendering-spec.md §7</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="canvas-header">
+    <div class="left">Marlin Retail Group · Strategic Options · 12 May 2026</div>
+    <div class="right">v1 · Painted from blackboard · Gate B selection</div>
+  </div>
+
+  <div class="canvas-body">
+
+    <!-- COMPARISON FRAME (LEFT, LARGEST) -->
+    <div class="comparison-frame">
+      <div class="frame-tag primary">SIDE-BY-SIDE COMPARISON · CENTRAL ARTEFACT</div>
+      <div class="frame-title">Three options · horizontal baselines aligned</div>
+      <div class="frame-subtitle">Trade-offs visible at a glance — gains and gives_up sit on the same row across all options</div>
+
+      <div class="options-grid">
+
+        <!-- Header row -->
+        <div class="row-label"></div>
+        <div class="option-cell header">
+          <div class="opt-id">OPT-A</div>
+          <div class="opt-name">Consolidate first</div>
+          <div class="opt-desc">Migrate brands to a single platform before any new capability work begins.</div>
+        </div>
+        <div class="option-cell header">
+          <div class="opt-id">OPT-B</div>
+          <div class="opt-name">Platform-first parallel</div>
+          <div class="opt-desc">Stand up new platform alongside legacy; brand-by-brand cutover with parallel running.</div>
+        </div>
+        <div class="option-cell header">
+          <div class="opt-id">OPT-C</div>
+          <div class="opt-name">Capability-led</div>
+          <div class="opt-desc">Build shared capabilities (identity, catalogue) first; platform follows behind.</div>
+        </div>
+
+        <!-- Target state row -->
+        <div class="row-label">Target state</div>
+        <div class="option-cell target-state">One Commerce Cloud platform, four brand experiences via configuration. Standardised checkout, payments, fulfilment.</div>
+        <div class="option-cell target-state">One Commerce Cloud platform with progressive cutover. Mixed legacy + new during transition (12–14 months).</div>
+        <div class="option-cell target-state">Salesforce identity + catalogue unified across brands; legacy commerce platforms preserved until value proven, then consolidated.</div>
+
+        <!-- Gains row -->
+        <div class="row-label">Gains</div>
+        <div class="option-cell gains">
+          <div class="callout">GAINS</div>
+          <ul>
+            <li>Fastest path to run-cost reduction (35% target hit by month 12)</li>
+            <li>Single source of truth from day one</li>
+            <li>Easiest ROM to defend</li>
+          </ul>
+        </div>
+        <div class="option-cell gains">
+          <div class="callout">GAINS</div>
+          <ul>
+            <li>Lower migration risk — no big-bang</li>
+            <li>Brand 4 keeps its checkout differentiation through transition</li>
+            <li>Each brand cutover can be optimised independently</li>
+          </ul>
+        </div>
+        <div class="option-cell gains">
+          <div class="callout">GAINS</div>
+          <ul>
+            <li>Cross-brand value unlocked first (Output 2 VD-03 hit earliest)</li>
+            <li>Lowest disruption to commerce ops</li>
+            <li>Optional platform consolidation gives off-ramp</li>
+          </ul>
+        </div>
+
+        <!-- Gives up row -->
+        <div class="row-label">Gives up</div>
+        <div class="option-cell gives-up">
+          <div class="callout">GIVES UP</div>
+          <ul>
+            <li>Brand 4 differentiation absorbed first — political risk with Marcus Eng</li>
+            <li>No value delivered for first 8–10 months</li>
+            <li>Highest cutover risk concentration</li>
+          </ul>
+        </div>
+        <div class="option-cell gives-up">
+          <div class="callout">GIVES UP</div>
+          <ul>
+            <li>Longest total programme (24+ months)</li>
+            <li>Two stacks to operate during transition — ops cost spike</li>
+            <li>Integration complexity highest of three options</li>
+          </ul>
+        </div>
+        <div class="option-cell gives-up">
+          <div class="callout">GIVES UP</div>
+          <ul>
+            <li>Run-cost reduction deferred 12+ months</li>
+            <li>Doesn't address Magento EOL deadline</li>
+            <li>Risk of "good enough" stalling platform consolidation entirely</li>
+          </ul>
+        </div>
+
+        <!-- Horizon row -->
+        <div class="row-label">Horizon</div>
+        <div class="option-cell"><span class="horizon-val">14 months</span></div>
+        <div class="option-cell"><span class="horizon-val">22 months</span></div>
+        <div class="option-cell"><span class="horizon-val">18 months</span></div>
+
+        <!-- Confidence row -->
+        <div class="row-label">Confidence</div>
+        <div class="option-cell"><span class="confidence conf-medium">Medium</span> · pending Feasibility check on identity sync timeline</div>
+        <div class="option-cell"><span class="confidence conf-high">High</span> · Feasibility confirmed; parallel patterns well-trodden</div>
+        <div class="option-cell"><span class="confidence conf-low">Low</span> · Feasibility flagged identity-first approach as novel for retail in ANZ</div>
+
+        <!-- Value drivers addressed row -->
+        <div class="row-label">Value drivers</div>
+        <div class="option-cell">
+          <span class="driver-chip">VD-01</span><span class="driver-chip">VD-02</span><span class="driver-chip">VD-04</span>
+          <div style="font-size: 9px; margin-top: 4px; color: #6B6B6B;">VD-03 (shared identity) deferred to phase 2</div>
+        </div>
+        <div class="option-cell">
+          <span class="driver-chip">VD-01</span><span class="driver-chip">VD-03</span><span class="driver-chip">VD-04</span>
+          <div style="font-size: 9px; margin-top: 4px; color: #6B6B6B;">VD-02 (ops consolidation) deferred</div>
+        </div>
+        <div class="option-cell">
+          <span class="driver-chip">VD-03</span><span class="driver-chip">VD-04</span>
+          <div style="font-size: 9px; margin-top: 4px; color: #6B6B6B;">VD-01, VD-02 deferred</div>
+        </div>
+
+        <!-- Cost profile row -->
+        <div class="row-label">Cost (ROM)</div>
+        <div class="option-cell cost-cell">
+          <div class="cost-figure">AU$10–14M</div>
+          <div class="cost-run">Run/yr: AU$3.0–4.0M</div>
+          <div class="feasibility-pill validated">Feasibility: validated</div>
+        </div>
+        <div class="option-cell cost-cell">
+          <div class="cost-figure">AU$14–18M</div>
+          <div class="cost-run">Run/yr: AU$3.5–4.5M</div>
+          <div class="feasibility-pill validated">Feasibility: validated</div>
+        </div>
+        <div class="option-cell cost-cell">
+          <div class="cost-figure">AU$11–17M</div>
+          <div class="cost-run">Run/yr: AU$3.0–4.5M</div>
+          <div class="feasibility-pill flagged">Feasibility: flagged for Stage 2</div>
+        </div>
+
+        <!-- Benefit profile row -->
+        <div class="row-label">Cumulative benefit</div>
+        <div class="option-cell benefit-cell">
+          <div class="benefit-row"><span class="hor">6mo</span> <span class="val">VD-04: 10–15%</span></div>
+          <div class="benefit-row"><span class="hor">12mo</span> <span class="val">VD-01: 30–40%, VD-04: 25–35%</span></div>
+          <div class="benefit-row"><span class="hor">18mo</span> <span class="val">VD-01: 70–85%, VD-02: 60–75%</span></div>
+          <div class="benefit-row"><span class="hor">24mo</span> <span class="val">VD-01, VD-02 fully realised</span></div>
+        </div>
+        <div class="option-cell benefit-cell">
+          <div class="benefit-row"><span class="hor">6mo</span> <span class="val">VD-04: 5–10%</span></div>
+          <div class="benefit-row"><span class="hor">12mo</span> <span class="val">VD-03: 20–30%, VD-04: 15–25%</span></div>
+          <div class="benefit-row"><span class="hor">18mo</span> <span class="val">VD-03: 60–75%, VD-04: 50–65%</span></div>
+          <div class="benefit-row"><span class="hor">24mo</span> <span class="val">VD-01: 70–85% (slowest path)</span></div>
+        </div>
+        <div class="option-cell benefit-cell">
+          <div class="benefit-row"><span class="hor">6mo</span> <span class="val">VD-03: 15–20%</span></div>
+          <div class="benefit-row"><span class="hor">12mo</span> <span class="val">VD-03: 55–70%</span></div>
+          <div class="benefit-row"><span class="hor">18mo</span> <span class="val">VD-03: 70–85%, VD-04: 30–45%</span></div>
+          <div class="benefit-row"><span class="hor">24mo</span> <span class="val">VD-01, VD-02 deferred to later phase</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SELECTION PANEL (RIGHT) -->
+    <div class="selection-panel">
+      <div class="frame-tag" style="background: #075985; margin-bottom: 14px;">SELECTION PANEL</div>
+      <h3>Your selection</h3>
+      <div class="selection-question">Pick the option that best fits the constraints. Selection is one-way — once made, the strategist captures it into the schema and versions to v2.</div>
+
+      <div class="selection-radio selected">
+        <div class="radio-dot"></div>
+        <div class="radio-content">
+          <div class="id">OPT-A</div>
+          <div class="name">Consolidate first</div>
+        </div>
+      </div>
+      <div class="selection-radio">
+        <div class="radio-dot"></div>
+        <div class="radio-content">
+          <div class="id">OPT-B</div>
+          <div class="name">Platform-first parallel</div>
+        </div>
+      </div>
+      <div class="selection-radio">
+        <div class="radio-dot"></div>
+        <div class="radio-content">
+          <div class="id">OPT-C</div>
+          <div class="name">Capability-led</div>
+        </div>
+      </div>
+
+      <div class="conditions-zone">
+        <h4>Conditions (optional)</h4>
+        <div class="field-hint">Any conditions attached to your selection. These become constraints for downstream agents.</div>
+        <div class="condition-sticky">
+          Subject to CFO sign-off on revised ROM (Output 9) showing AU$10M implementation cap holds
+        </div>
+        <div class="condition-sticky">
+          Marcus Eng (B4 MD) must agree to phased B4 checkout standardisation in writing before commit
+        </div>
+      </div>
+
+      <div class="rationale-zone">
+        <h4>Stated rationale</h4>
+        <div class="field-hint">Captured verbatim where possible.</div>
+        <div class="rationale-sticky">
+          "Magento EOL forces the deadline. Consolidating first is the only option that hits FY27 with confidence. The Brand 4 risk is real but it's a political risk, not a technical one — and we can manage politics."
+          <div class="author">— S. Park, CEO · 12 May 2026</div>
+        </div>
+      </div>
+
+      <div class="lock-notice">
+        <div class="icon">⇄</div>
+        <div>
+          <strong>One-way capture.</strong> When the sponsor marks a selection here, the plugin reads the chosen option ID, conditions, and rationale, then calls the agent's selection-update routine. The agent writes the selection block to the schema; the canvas can't be edited after.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="key-pattern">
+  <strong>Why this paint-back doesn't round-trip.</strong>
+  Outputs 1–4 paint-backs are round-trip iteration surfaces — sponsors edit, comments flow back, agent revises to v2. Output 5 is fundamentally different: the sponsor isn't editing the options, they're <em>choosing among</em> them. There is no "what if we change OPT-B's gains?" — that would be the strategist re-shaping the option set, not the sponsor editing on canvas. The selection panel exists; it does one thing: capture which option won, with what conditions, for what stated reason. Then the schema versions to v2 with the selection block populated.
+</div>
+
+<div class="legend">
+  <div class="legend-title">Paint-back conventions</div>
+  <div class="legend-row">
+    <div class="legend-item">
+      <div class="legend-item-title">Horizontal baselines aligned</div>
+      <div class="legend-item-desc">Each row (target state, gains, gives_up, horizon, confidence, value drivers, cost, benefit) sits on the same horizontal baseline across all options. Sponsors compare directly — visual scan rather than reading.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Cost in AUD · benefit in % of VD impact</div>
+      <div class="legend-item-desc">Cost is ROM in AUD ranges from Salesforce effort references (purple stripe). Benefit is cumulative percentage of value driver impact by horizon (green stripe). AUD conversion of benefits happens only at Output 10 (Business Case) — strategist doesn't invent dollar benefits.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Feasibility validation visible per option</div>
+      <div class="legend-item-desc">Every option's cost profile shows Feasibility's verdict — validated / flagged for Stage 2 / rejected. Mandatory consultation before publishing. Sponsors see which options have a wider error bar on cost.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Gives_up gets equal visual weight to gains</div>
+      <div class="legend-item-desc">Most decks soft-pedal trade-off costs. This frame doesn't — gives_up gets its own colour-coded callout matching gains in visual prominence.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Selection panel is the only interactive element</div>
+      <div class="legend-item-desc">Three radio-style selectors plus two free-form zones (conditions, rationale). Selection is mutually exclusive. No other element on this canvas is editable.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-item-title">Schema versioning happens after selection</div>
+      <div class="legend-item-desc">When the sponsor marks a selection, the plugin extracts the option ID, conditions, and rationale stickies. The agent writes them into the canonical schema's selection block. The deck regenerates in post-selection state.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footnote">
+  Visual reference for the FigJam paint-back frame Mladen builds in FigJam. Content is illustrative (Marlin Retail Group, fictional decision). Schema field bindings, selection capture mechanism, and the one-way write are in <span style="font-family: ui-monospace, monospace;">figjam-output-rendering-spec.md §7</span>.
+</div>
+
+</body>
+</html>
